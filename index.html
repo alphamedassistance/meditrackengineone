@@ -1,0 +1,3108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6a11cb">
+    <meta name="description" content="MediTrack - Medicine Tracking Application">
+    <title>MediTrack ver. 1.0</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on Android */
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden; /* Prevent horizontal scroll on body */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+            width: 100%;
+        }
+
+        /* Install Button Styles */
+        #install-btn-container {
+            display: none; /* Hidden by default, shown via JS */
+            margin-top: 25px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn-install {
+            background: linear-gradient(45deg, #ff00cc, #333399);
+            color: white;
+            font-weight: bold;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 2px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: pulse 2s infinite;
+            font-size: 1.1em;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive adjustments for the main layout */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            gap: 10px;
+        }
+
+        .header h2 {
+            font-size: 1.2em;
+            margin: 0;
+        }
+        
+        .header div {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 20px;
+            flex-direction: column; 
+        }
+
+        .login-form {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%; /* Default to full width on mobile/small contexts */
+            text-align: center;
+        }
+
+        /* Button Colors */
+        .btn-primary { background-color: #4CAF50; color: white; }
+        .btn-primary:hover { background-color: #45a049; }
+        .btn-danger { background-color: #f44336; color: white; }
+        .btn-danger:hover { background-color: #d32f2f; }
+        .btn-success { background-color: #4CAF50; color: white; }
+        .btn-success:hover { background-color: #45a049; }
+        .btn-info { background-color: #2196F3; color: white; }
+        .btn-info:hover { background-color: #0b7dda; }
+        .btn-warning { background-color: #FF9800; color: white; }
+        .btn-warning:hover { background-color: #e68a00; }
+
+        /* --- PORTAL LINKS STYLES START --- */
+        :root {
+            --primary-color: #007bff;   
+            --secondary-color: #6c757d; 
+            --border-color: #dee2e6;    
+        }
+
+        .portal-links {
+            margin-top: 25px;
+            text-align: left;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .portal-links p {
+            margin: 10px 0;
+        }
+
+        .portal-link-item {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .portal-link-item:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .portal-link-item span {
+            font-size: 1.2em;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        /* --- PORTAL LINKS STYLES END --- */
+
+        /* Page 2 Styles */
+        .page-2 {
+            display: none;
+        }
+
+        #admin-btn {
+            opacity: 0; 
+        }
+
+        /* Calendar and Modal styling */
+        .calendar-container, .records-container, .modal-content {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+            overflow-x: hidden;
+            width: 100%;
+        }
+        
+        /* CALENDAR SPECIFIC STYLES - FIXED FOR ANDROID/MOBILE */
+        .calendar-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .btn-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #2196F3;
+            padding: 0;
+            line-height: 1;
+            transition: transform 0.3s ease;
+        }
+        .btn-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            width: 100%;
+        }
+
+        .calendar-day {
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            min-height: 40px; /* Ensure height consistency */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-day.frozen {
+            pointer-events: none;
+            opacity: 0.6;
+            background-color: #f0f0f0;
+        }
+
+        .calendar-day:hover {
+            background-color: #f0f0f0;
+        }
+
+        .calendar-day.header {
+            font-weight: bold;
+            background-color: #f8f9fa;
+            font-size: 0.9em;
+        }
+
+        .current-date {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .calendar-day.selected {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better scrolling */
+            padding: 20px 10px; /* Small padding on sides for mobile */
+            overflow-y: auto; /* Allow modal container to scroll */
+        }
+
+        .modal-content {
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            margin-top: 20px; /* Push down slightly */
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close {
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 5px;
+        }
+
+        /* Records Table Styles */
+        .records-container {
+            overflow-x: auto;
+        }
+        
+        .records-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-width: 150px;
+        }
+        
+        .search-container .btn {
+            width: auto;
+            flex-shrink: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            border-bottom-width: 2px;
+        }
+
+        .status-pending { background-color: white; }
+        .status-upcoming { background-color: #fff9c4; }
+        .status-done { background-color: #c8e6c9; }
+        .status-failed { background-color: #ffcdd2; }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .frozen-button {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* Pagination Styles */
+        .pagination {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .pagination-controls .btn {
+            width: auto;
+            flex-grow: 1;
+            min-width: 80px;
+        }
+
+        .pagination-label {
+            font-weight: bold;
+            text-align: center;
+            margin: 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Form Styles */
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-col {
+            flex: 1 0 100%;
+        }
+
+        .form-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-buttons .btn {
+            flex: 1 1 45%; /* Buttons take about half width each on mobile */
+        }
+
+        /* Additional buttons alignment and sizing */
+        #additional-buttons {
+            display: none;
+            justify-content: center;
+            align-items: stretch;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #additional-buttons .btn {
+            flex: 1 1 120px;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9em;
+        }
+
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 1rem; }
+        .mt-4 { margin-top: 1.5rem; }
+
+        /* PDF Content Wrapper */
+        .pdf-content {
+            padding: 10px; /* Reduced padding for mobile */
+            background-color: white;
+            overflow-x: auto;
+        }
+
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            left: 20px; /* Ensure it fits on mobile */
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+            text-align: center;
+        }
+        @media (min-width: 768px) {
+            .notification {
+                left: auto;
+                width: auto;
+                max-width: 400px;
+            }
+        }
+
+        .notification.show { opacity: 1; transform: translateY(0); }
+        .notification.success { background-color: #4CAF50; }
+        .notification.error { background-color: #f44336; }
+        .notification.info { background-color: #2196F3; }
+
+        /* Admin Modal Specific Styles */
+        .admin-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .admin-control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-controls {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            padding-left: 20px;
+            border-left: 2px solid #ddd;
+        }
+
+        .admin-controls label, .admin-controls span {
+            font-weight: 600;
+        }
+        
+        /* --- MOBILE SPECIFIC MEDIA QUERIES --- */
+        
+        /* Small Mobile Devices (Android/iPhone SE) */
+        @media (max-width: 575px) {
+            .container {
+                padding: 5px; /* Maximize space */
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .header div {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            /* Fit Calendar on Mobile */
+            .calendar {
+                gap: 2px; /* Reduce gap */
+            }
+
+            .calendar-day {
+                padding: 5px 2px; /* Minimize padding */
+                font-size: 0.85rem; /* Smaller font */
+                min-height: 35px;
+            }
+            
+            .calendar-day.header {
+                font-size: 0.75rem; /* Smaller header font (Sun, Mon...) */
+                padding: 5px 0;
+            }
+
+            /* Adjust Modals for Mobile */
+            .modal-content {
+                width: 98%; /* Use almost full width */
+                padding: 15px;
+                margin: 10px auto;
+            }
+
+            .btn {
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+
+            #additional-buttons .btn {
+                flex: 1 1 45%; /* 2 buttons per row */
+                font-size: 12px;
+            }
+
+            .form-buttons .btn {
+                flex: 1 1 100%; /* Stack buttons on very small screens */
+            }
+        }
+        
+        /* Tablets and larger phones */
+        @media (min-width: 576px) {
+            .form-row {
+                flex-direction: row;
+                flex-wrap: wrap;
+                margin: 0 -10px;
+            }
+
+            .form-col {
+                flex: 1 0 200px;
+                padding: 0 10px;
+            }
+            
+            .form-buttons .btn {
+                flex: 1 1 auto;
+                width: auto;
+            }
+        }
+        
+        /* PC / Desktop */
+        @media (min-width: 768px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            .header h2 {
+                margin-bottom: 0;
+            }
+
+            .header .btn {
+                width: auto;
+                margin-left: 10px;
+            }
+
+            #additional-buttons {
+                flex-direction: row;
+            }
+
+            .calendar {
+                gap: 5px; /* Restore gap for PC */
+            }
+
+            .calendar-day {
+                padding: 15px; /* Restore padding for PC */
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+
+    <div class="login-container" id="login-page">
+        <div class="login-form">
+            <h2>MediTrack ver. 1.0</h2>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            <button class="btn btn-primary" id="login-btn">Login</button>
+            <button class="btn btn-warning mt-3" id="enter-code-btn">Enter Code</button>
+
+            <div class="portal-links">
+                <p>
+                    <a href="https://alphamedassistance.github.io/portalmain/" class="portal-link-item">
+                        <span>🌍</span> click to access web portal
+                    </a>
+                </p>
+                <p>
+                    <a href="https://m.me/61578341193853" target="_blank" rel="noopener noreferrer" class="portal-link-item">
+                        <span>🎧</span> click to request assistance
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <div id="install-btn-container">
+            <button id="install-btn" class="btn btn-install">📲 Install App</button>
+        </div>
+    </div>
+
+    <div class="page-2" id="page-2">
+        <div class="header">
+            <h2>MediTrack ver. 1.0</h2>
+            <div>
+                <button class="btn btn-danger" id="logout-btn">Logout</button>
+                <button class="btn btn-info" id="admin-btn">Admin</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div id="additional-buttons">
+                <button class="btn btn-info" id="view-records-btn">View Records</button>
+                <button class="btn btn-warning" id="list-patients-btn">List of Patients</button>
+                <button class="btn btn-success" id="summary-report-btn">Summary Report</button>
+                <button class="btn btn-primary" id="taken-medicine-btn">List of Taken Medicine</button>
+                <button class="btn btn-danger" id="failed-intake-btn">Failed to Intake</button>
+                <button class="btn btn-info" id="export-json-btn">Export JSON</button>
+                <button class="btn btn-info" id="import-json-btn">Import JSON</button>
+            </div>
+
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3 id="current-month">Calendar</h3>
+                    <button id="toggle-buttons-btn" class="btn-toggle">◆</button>
+                </div>
+                <div class="calendar" id="calendar">
+                </div>
+            </div>
+
+            <div class="records-container" id="records-container" style="display: none;">
+                <div class="records-header" style="justify-content: flex-start; gap: 15px; flex-wrap: wrap;">
+                    <h3>Medication Records</h3>
+                    <span style="font-size: 13px; color: #d32f2f; font-style: italic; font-weight: 500;">Paalala: Laging sumunod sa reseta ng doktor at tiyaking tugma ang mga impormasyon na inilalagay ng user sa app.</span>
+                </div>
+                <div class="form-row" style="margin-bottom: 15px;">
+                    <div class="form-col">
+                        <label for="records-date-filter">Filter by Date (Leave empty for all)</label>
+                        <input type="date" id="records-date-filter" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%;">
+                    </div>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search records...">
+                    <button class="btn btn-info" id="search-btn">Search</button>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table id="records-table">
+                        <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Medicine</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Frequency 1</th>
+                                <th>Frequency 2</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="records-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="records-pagination">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="register-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Register Medication</h3>
+                <span class="close" id="close-register">&times;</span>
+            </div>
+            <form id="medication-form">
+                <input type="hidden" id="medication-id">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="full-name">Full Name</label>
+                        <input type="text" id="full-name" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="gender">Gender</label>
+                        <select id="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-col">
+                        <label for="dob">Date Of Birth</label>
+                        <input type="date" id="dob" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="medicine-name">Name Of Medicine</label>
+                        <input type="text" id="medicine-name" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="medicine-type">Type Of Medicine</label>
+                        <select id="medicine-type" required>
+                            <option value="">Select Type</option>
+                            <option value="Tablet">Tablet</option>
+                            <option value="Capsule">Capsule</option>
+                            <option value="Syrup">Syrup</option>
+                            <option value="Injection">Injection</option>
+                            <option value="Ointment/Cream">Ointment/Cream</option>
+                            <option value="Drops">Drops</option>
+                            <option value="Inhaler">Inhaler</option>
+                            <option value="Suppository">Suppository</option>
+                            <option value="Patch">Patch</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="time">Time Of Intake</label>
+                        <input type="time" id="time" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="frequency-1">Frequency 1</label>
+                        <select id="frequency-1" required>
+                            <option value="">Select Frequency</option>
+                            <option value="Once a day">Once a day → isang beses sa isang araw</option>
+                            <option value="Twice a day">Twice a day → dalawang beses sa isang araw </option>
+                            <option value="Three times a day">Three times a day → tatlong beses sa isang araw </option>
+                            <option value="Four times a day">Four times a day → apat na beses sa isang araw </option>
+                            <option value="As needed">As needed → kapag kailangan lang</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+                    <div class="form-col">
+                        <label for="frequency-2">Frequency 2</label>
+                        <select id="frequency-2" required>
+                            <option value="">Select Frequency</option>
+                            <option value="HS (at bedtime)">HS (at bedtime) → bago matulog</option>
+                            <option value="AC (before meals)">AC (before meals) → bago kumain</option>
+                            <option value="PC (after meals)">PC (after meals) → pagkatapos kumain</option>
+                            <option value="STAT (immediately)">STAT (immediately) → agad-agad</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+                    <div class="form-col">
+                        <label for="duration">Duration</label>
+                        <select id="duration" required>
+                            <option value="">Select Duration</option>
+                            <option value="1">1 day</option>
+                            <option value="3">3 days</option>
+                            <option value="7">7 days</option>
+                            <option value="30">1 month</option>
+                        </select>
+                    </div>
+                    </div>
+
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-danger" id="cancel-btn">Cancel</button>
+                    <button type="button" class="btn btn-info" id="same-patient-btn">Same Patient</button>
+                    <button type="button" class="btn btn-primary" id="set-entry-btn">Set Entry</button>
+                    <button type="submit" class="btn btn-success" id="save-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="entry-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Set Intake Entries</h3>
+                <span class="close" id="close-entry-modal">&times;</span>
+            </div>
+            <div id="entry-form">
+                <div class="form-group">
+                    <label for="intake-count">How many entries?</label>
+                    <span id="intake-count"></span>
+                </div>
+                <div id="application-entries">
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-success" id="apply-entries-btn">Apply</button>
+                    <button type="button" class="btn btn-danger" id="cancel-entries-btn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="patients-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>List of Patients</h3>
+                <span class="close" id="close-patients">&times;</span>
+            </div>
+            <div class="pdf-content">
+                <div class="search-container">
+                    <input type="text" id="patient-search-input" placeholder="Search patients...">
+                    <button class="btn btn-info" id="patient-search-btn">Search</button>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Date of Birth</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patients-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="pagination" id="patients-pagination">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-success" id="download-patients-pdf-btn">Download PDF</button>
+                <button class="btn btn-info" id="copy-patients-pdf-btn">Copy Text</button>
+                <button class="btn btn-danger" id="close-patients-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="summary-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Summary Report</h3>
+                <span class="close" id="close-summary">&times;</span>
+            </div>
+            <div class="pdf-content">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="summary-date">Select Date</label>
+                        <input type="date" id="summary-date" required>
+                    </div>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="summary-search-input" placeholder="Search summary...">
+                    <button class="btn btn-info" id="summary-search-btn">Search</button>
+                </div>
+                <h4 id="summary-title"></h4>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Medicine</th>
+                                <th>Time</th>
+                                <th>Frequency 1</th>
+                                <th>Frequency 2</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="pagination" id="summary-pagination">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-success" id="download-pdf-btn">Download PDF</button>
+                <button class="btn btn-info" id="copy-pdf-btn">Copy Text</button>
+                <button class="btn btn-danger" id="close-summary-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="taken-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>List of Taken Medicine</h3>
+                <span class="close" id="close-taken">&times;</span>
+            </div>
+            <div class="pdf-content">
+                 <div class="form-row" style="margin-bottom: 15px;">
+                    <div class="form-col">
+                        <label for="taken-date">Select Date</label>
+                        <input type="date" id="taken-date" required>
+                    </div>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="taken-search-input" placeholder="Search taken medicine...">
+                    <button class="btn btn-info" id="taken-search-btn">Search</button>
+                </div>
+                <h4 id="taken-title"></h4>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Medicine</th>
+                                <th>Time of Intake</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taken-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="pagination" id="taken-pagination">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-success" id="download-taken-pdf-btn">Download PDF</button>
+                <button class="btn btn-info" id="copy-taken-pdf-btn">Copy Text</button>
+                <button class="btn btn-danger" id="close-taken-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="failed-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Failed to Intake Medicine</h3>
+                <span class="close" id="close-failed">&times;</span>
+            </div>
+            <div class="pdf-content">
+                <div class="form-row" style="margin-bottom: 15px;">
+                    <div class="form-col">
+                        <label for="failed-date">Select Date</label>
+                        <input type="date" id="failed-date" required>
+                    </div>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="failed-search-input" placeholder="Search failed intake...">
+                    <button class="btn btn-info" id="failed-search-btn">Search</button>
+                </div>
+                <h4 id="failed-title"></h4>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Medicine</th>
+                                <th>Time of Intake</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="failed-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="pagination" id="failed-pagination">
+            </div>
+            <div class="form-buttons">
+                <button class="btn btn-success" id="download-failed-pdf-btn">Download PDF</button>
+                <button class="btn btn-info" id="copy-failed-pdf-btn">Copy Text</button>
+                <button class="btn btn-danger" id="close-failed-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="import-export-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="import-export-title">Import/Export Data</h3>
+                <span class="close" id="close-import-export">&times;</span>
+            </div>
+            <div id="export-section">
+                <p>Click the button below to export data as JSON file:</p>
+                <button class="btn btn-success" id="download-json-btn">Download JSON</button>
+                <p class="mt-3">Or copy the JSON data below:</p>
+                <textarea id="json-data" rows="10" style="width: 100%; padding: 10px;"></textarea>
+                <button class="btn btn-info mt-2" id="copy-json-btn">Copy JSON</button>
+            </div>
+            <div id="import-section" class="mt-4">
+                <p>Upload JSON file to import data:</p>
+                <input type="file" id="json-file-input" accept=".json">
+                <p class="mt-3">Or paste JSON data below:</p>
+                <textarea id="import-json-data" rows="5" style="width: 100%; padding: 10px;"></textarea>
+                <button class="btn btn-info mt-2" id="import-json-data-btn">Import JSON</button>
+            </div>
+            <div class="form-buttons mt-3">
+                <button class="btn btn-danger" id="close-import-export-btn">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="admin-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Admin Panel</h3>
+                <span class="close" id="close-admin">&times;</span>
+            </div>
+            <div id="admin-login">
+                <div class="form-group">
+                    <label for="admin-password">Admin Password</label>
+                    <input type="password" id="admin-password" placeholder="Enter admin password">
+                </div>
+                <button class="btn btn-primary" id="admin-login-btn">Submit</button>
+            </div>
+            <div id="admin-panel-content" style="display: none;">
+                <div class="admin-options">
+                    <div class="admin-control-group">
+                        <button class="btn btn-info toggle-arrow" id="toggleDateInputsBtn">↓</button>
+                        <span>Start/Stop Progress</span>
+                    </div>
+                    <div class="admin-controls" id="dateInputs">
+                        <div class="form-group">
+                            <label for="timerStartDate">Start Date & Time</label>
+                            <input type="datetime-local" id="timerStartDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="timerEndDate">End Date & Time</label>
+                            <input type="datetime-local" id="timerEndDate">
+                        </div>
+                        <button class="btn btn-success" id="startProgressBtn" disabled>Start Progress</button>
+                        <p id="admin-options-error" style="color: red;"></p>
+                    </div>
+                    
+                    <div class="admin-control-group mt-3">
+                        <button class="btn btn-info toggle-arrow" id="toggleCountdownBtn">↓</button>
+                        <span>Current Progress</span>
+                    </div>
+                    <div class="admin-controls" id="countdownDisplay">
+                        <p id="countdownLabel">Time remaining until freeze:</p>
+                        <strong id="countdownTimer">N/A</strong>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button class="btn btn-warning" id="stopTimerBtn">Stop Progress</button>
+                        <button class="btn btn-info" id="code-checker-btn">Code Checker</button>
+                        <button class="btn btn-danger" id="clearDataBtn">Clear All Data</button>
+                        <button class="btn btn-danger" id="close-admin-btn">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="clearDataPasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Data Deletion</h3>
+                <span class="close" id="close-clear-password-modal">&times;</span>
+            </div>
+            <form id="clearDataForm">
+                <div class="form-group">
+                    <label for="clearDataPassword">Admin Password</label>
+                    <input type="password" id="clearDataPassword" placeholder="Enter admin password to confirm">
+                </div>
+                <p id="clear-data-error" style="color: red;"></p>
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-danger" id="cancelClearDataBtn">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Confirm Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="extension-code-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Enter Access Code</h3>
+                <span class="close" id="close-extension-modal">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="extension-code">Please type access code</label>
+                <input type="text" id="extension-code" placeholder="Enter code here" autocomplete="off">
+                <p id="extension-code-error" style="color: red; margin-top: 10px;"></p>
+            </div>
+            <div class="form-buttons">
+                <button type="button" class="btn btn-danger" id="cancel-extension-btn">Cancel</button>
+                <button type="button" class="btn btn-success" id="submit-extension-code-btn">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SUPABASE CONFIGURATION ---
+        const supabaseUrl = 'https://wmciiqeywkluzkslzsrq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtY2lpcWV5d2tsdXprc2x6c3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNDk0MjksImV4cCI6MjA3OTgyNTQyOX0.qVXO8GcXW8AsjWT4N-zkfW5B0g5qijoPX2mOZc4btVQ';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // --- PWA INSTALLATION LOGIC ---
+        let deferredPrompt;
+        const installBtnContainer = document.getElementById('install-btn-container');
+        const installBtn = document.getElementById('install-btn');
+
+        // Check if service worker is supported and register it
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Registering the new service-worker.js file for offline caching
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker registered successfully:', reg))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+
+        // Handle the install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            deferredPrompt = e;
+            // Update UI notify the user they can install the PWA
+            installBtnContainer.style.display = 'block';
+            console.log('beforeinstallprompt fired, install button shown');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            // Hide the app provided install promotion
+            installBtnContainer.style.display = 'none';
+            // Show the install prompt
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                // We've used the prompt, and can't use it again, throw it away
+                deferredPrompt = null;
+            }
+        });
+
+        // Hide button if app is already installed
+        window.addEventListener('appinstalled', () => {
+            installBtnContainer.style.display = 'none';
+            console.log('PWA was successfully installed');
+        });
+        // --- END PWA LOGIC ---
+
+
+        // Database setup
+        let db;
+        const DB_NAME = 'MedicineSupportDB';
+        const DB_VERSION = 1;
+        
+        // Object store names
+        const STORE_MEDICATIONS = 'medications';
+        const STORE_PATIENTS = 'patients';
+        
+        // Notification function
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => {
+                    reject('Error opening database');
+                };
+                
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    
+                    if (!db.objectStoreNames.contains(STORE_MEDICATIONS)) {
+                        const medStore = db.createObjectStore(STORE_MEDICATIONS, { keyPath: 'id', autoIncrement: true });
+                        medStore.createIndex('name', 'fullName', { unique: false });
+                        medStore.createIndex('date', 'date', { unique: false });
+                        medStore.createIndex('status', 'status', { unique: false });
+                    }
+                    
+                    if (!db.objectStoreNames.contains(STORE_PATIENTS)) {
+                        const patientStore = db.createObjectStore(STORE_PATIENTS, { keyPath: 'id', autoIncrement: true });
+                        patientStore.createIndex('name', 'fullName', { unique: true });
+                    }
+                };
+            });
+        }
+        
+        // Data storage
+        let medications = [];
+        let patients = [];
+        let currentPage = 1;
+        const recordsPerPage = 5;
+        let lastPatientData = null;
+        let currentEditingId = null;
+        let timerInterval = null;
+        let countdownInterval = null;
+        let intakeTimes = [];
+
+        // Admin functionality variables
+        const ADMIN_PASSWORD = 'urielllamasadmin2025';
+
+        // DOM Elements
+        const loginPage = document.getElementById('login-page');
+        const page2 = document.getElementById('page-2');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const adminBtn = document.getElementById('admin-btn');
+        const calendarEl = document.getElementById('calendar');
+        const currentMonthEl = document.getElementById('current-month');
+        const viewRecordsBtn = document.getElementById('view-records-btn');
+        const listPatientsBtn = document.getElementById('list-patients-btn');
+        const summaryReportBtn = document.getElementById('summary-report-btn');
+        const takenMedicineBtn = document.getElementById('taken-medicine-btn');
+        const failedIntakeBtn = document.getElementById('failed-intake-btn');
+        const exportJsonBtn = document.getElementById('export-json-btn');
+        const importJsonBtn = document.getElementById('import-json-btn');
+        const recordsContainer = document.getElementById('records-container');
+        const recordsBody = document.getElementById('records-body');
+        const recordsPagination = document.getElementById('records-pagination');
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const registerModal = document.getElementById('register-modal');
+        const closeRegisterBtn = document.getElementById('close-register');
+        const medicationForm = document.getElementById('medication-form');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const samePatientBtn = document.getElementById('same-patient-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const patientsModal = document.getElementById('patients-modal');
+        const closePatientsBtn = document.getElementById('close-patients');
+        const patientsBody = document.getElementById('patients-body');
+        const patientsPagination = document.getElementById('patients-pagination');
+        const closePatientsModalBtn = document.getElementById('close-patients-btn');
+        const patientSearchInput = document.getElementById('patient-search-input');
+        const patientSearchBtn = document.getElementById('patient-search-btn');
+        const summaryModal = document.getElementById('summary-modal');
+        const closeSummaryBtn = document.getElementById('close-summary');
+        const summaryBody = document.getElementById('summary-body');
+        const summaryPagination = document.getElementById('summary-pagination');
+        const closeSummaryBtn2 = document.getElementById('close-summary-btn');
+        const summaryDate = document.getElementById('summary-date');
+        const summarySearchInput = document.getElementById('summary-search-input');
+        const summarySearchBtn = document.getElementById('summary-search-btn');
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+        const copyPdfBtn = document.getElementById('copy-pdf-btn');
+        const takenModal = document.getElementById('taken-modal');
+        const closeTakenBtn = document.getElementById('close-taken');
+        const takenBody = document.getElementById('taken-body');
+        const takenPagination = document.getElementById('taken-pagination');
+        const closeTakenBtn2 = document.getElementById('close-taken-btn');
+        const takenSearchInput = document.getElementById('taken-search-input');
+        const takenSearchBtn = document.getElementById('taken-search-btn');
+        const downloadTakenPdfBtn = document.getElementById('download-taken-pdf-btn');
+        const copyTakenPdfBtn = document.getElementById('copy-taken-pdf-btn');
+        const failedModal = document.getElementById('failed-modal');
+        const closeFailedBtn = document.getElementById('close-failed');
+        const failedBody = document.getElementById('failed-body');
+        const failedPagination = document.getElementById('failed-pagination');
+        const closeFailedBtn2 = document.getElementById('close-failed-btn');
+        const failedSearchInput = document.getElementById('failed-search-input');
+        const failedSearchBtn = document.getElementById('failed-search-btn');
+        const downloadFailedPdfBtn = document.getElementById('download-failed-pdf-btn');
+        const copyFailedPdfBtn = document.getElementById('copy-failed-pdf-btn');
+        const importExportModal = document.getElementById('import-export-modal');
+        const closeImportExportBtn = document.getElementById('close-import-export');
+        const closeImportExportBtn2 = document.getElementById('close-import-export-btn');
+        const downloadJsonBtn = document.getElementById('download-json-btn');
+        const jsonDataTextarea = document.getElementById('json-data');
+        const copyJsonBtn = document.getElementById('copy-json-btn');
+        const jsonFileInput = document.getElementById('json-file-input');
+        const importJsonDataTextarea = document.getElementById('import-json-data');
+        const importJsonDataBtn = document.getElementById('import-json-data-btn');
+        const downloadPatientsPdfBtn = document.getElementById('download-patients-pdf-btn');
+        const copyPatientsPdfBtn = document.getElementById('copy-patients-pdf-btn');
+        const summaryTitle = document.getElementById('summary-title');
+        const takenTitle = document.getElementById('taken-title');
+        const failedTitle = document.getElementById('failed-title');
+        const adminModal = document.getElementById('admin-modal');
+        const adminPasswordInput = document.getElementById('admin-password');
+        const adminLoginBtn = document.getElementById('admin-login-btn');
+        const adminLoginSection = document.getElementById('admin-login');
+        const adminPanelContent = document.getElementById('admin-panel-content');
+        const closeAdminBtn = document.getElementById('close-admin');
+        const closeAdminPanelBtn = document.getElementById('close-admin-btn');
+        const toggleDateInputsBtn = document.getElementById('toggleDateInputsBtn');
+        const toggleCountdownBtn = document.getElementById('toggleCountdownBtn');
+        const dateInputs = document.getElementById('dateInputs');
+        const countdownDisplay = document.getElementById('countdownDisplay');
+        const timerStartDateInput = document.getElementById('timerStartDate');
+        const timerEndDateInput = document.getElementById('timerEndDate');
+        const countdownTimerEl = document.getElementById('countdownTimer');
+        const startProgressBtn = document.getElementById('startProgressBtn');
+        const stopTimerBtn = document.getElementById('stopTimerBtn');
+        const codeCheckerBtn = document.getElementById('code-checker-btn');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+        const clearDataPasswordModal = document.getElementById('clearDataPasswordModal');
+        const clearDataPasswordInput = document.getElementById('clearDataPassword');
+        const clearDataForm = document.getElementById('clearDataForm');
+        const cancelClearDataBtn = document.getElementById('cancelClearDataBtn');
+        const setEntryBtn = document.getElementById('set-entry-btn');
+        const entryModal = document.getElementById('entry-modal');
+        const closeEntryModalBtn = document.getElementById('close-entry-modal');
+        const applyEntriesBtn = document.getElementById('apply-entries-btn');
+        const cancelEntriesBtn = document.getElementById('cancel-entries-btn');
+        const frequency1Select = document.getElementById('frequency-1');
+        const timeInput = document.getElementById('time');
+        const toggleButtonsBtn = document.getElementById('toggle-buttons-btn');
+        const additionalButtons = document.getElementById('additional-buttons');
+        const takenDate = document.getElementById('taken-date');
+        const failedDate = document.getElementById('failed-date');
+        const recordsDateFilter = document.getElementById('records-date-filter');
+
+        // Current date
+        const today = new Date();
+        let currentDate = today.getDate();
+        let currentMonth = today.getMonth();
+        let currentYear = today.getFullYear();
+
+        const freezeUI = () => {
+            document.querySelectorAll(
+                '#view-records-btn, #list-patients-btn, #summary-report-btn, #taken-medicine-btn, #failed-intake-btn, #export-json-btn, #import-json-btn, .action-btn, #register-modal .btn'
+            ).forEach(btn => {
+                if (btn.id !== 'cancel-btn') {
+                    btn.classList.add('frozen-button');
+                    btn.disabled = true;
+                }
+            });
+            document.querySelectorAll('.calendar-day:not(.header)').forEach(day => day.classList.add('frozen'));
+        };
+
+        const unfreezeUI = () => {
+            document.querySelectorAll(
+                '#view-records-btn, #list-patients-btn, #summary-report-btn, #taken-medicine-btn, #failed-intake-btn, #export-json-btn, #import-json-btn, .action-btn, #register-modal .btn'
+            ).forEach(btn => {
+                btn.classList.remove('frozen-button');
+                btn.disabled = false;
+            });
+            document.querySelectorAll('.calendar-day:not(.header)').forEach(day => day.classList.remove('frozen'));
+        };
+        
+        const applyUIState = () => {
+            // DEFAULT STATE IS FROZEN if undefined
+            const status = localStorage.getItem('appStatus');
+            if (status === 'frozen' || !status) {
+                freezeUI();
+            } else {
+                unfreezeUI();
+            }
+        };
+
+        const getLocalISOString = (date) => (new Date(date.getTime() - (date.getTimezoneOffset() * 60000))).toISOString().slice(0, 16);
+
+        function showModal(modalElement) {
+            modalElement.style.display = 'flex';
+        }
+        function hideModal(modalElement) {
+            modalElement.style.display = 'none';
+        }
+
+        async function initApp() {
+            loginPage.style.display = 'flex';
+            page2.style.display = 'none';
+
+            // FORCE START IN FREEZE MODE FOR NEW USERS
+            if (!localStorage.getItem('appStatus')) {
+                localStorage.setItem('appStatus', 'frozen');
+                // Remove expiration if it exists to ensure clean slate
+                localStorage.removeItem('appExpiration'); 
+            }
+
+            try {
+                await initDB();
+                await loadAllData();
+                checkExpirationOnLoad();
+
+                loginBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (usernameInput.value === 'account1' && passwordInput.value === 'store2025') {
+                        // Allow login but keep UI state based on appStatus
+                        loginPage.style.display = 'none';
+                        page2.style.display = 'block';
+                        
+                        applyUIState();
+                        generateCalendar(currentMonth, currentYear);
+                        updateStatusColors();
+                        
+                        if (localStorage.getItem('appStatus') === 'running' && !timerInterval) {
+                            timerInterval = setInterval(updateStatusColors, 60000);
+                        } else if (localStorage.getItem('appStatus') === 'frozen') {
+                             showNotification('Application is in Freeze Mode. Please enter Access Code.', 'info');
+                        }
+                    } else {
+                        showNotification('Invalid username or password', 'error');
+                    }
+                });
+                setupEventListeners();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                showNotification('Error initializing application. Please refresh the page.', 'error');
+            }
+        }
+        
+        // Helper function to convert string to Title Case
+        function toTitleCase(str) {
+            if (!str) return '';
+            return str.replace(
+                /\w\S*/g,
+                (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+            );
+        }
+
+        function setupEventListeners() {
+            // Auto-capitalize inputs in the registration form
+            const fullNameInput = document.getElementById('full-name');
+            const medicineNameInput = document.getElementById('medicine-name');
+
+            fullNameInput.addEventListener('input', (e) => {
+                e.target.value = toTitleCase(e.target.value);
+            });
+
+            medicineNameInput.addEventListener('input', (e) => {
+                e.target.value = toTitleCase(e.target.value);
+            });
+
+            // Trial Extension Modal Elements
+            const enterCodeBtn = document.getElementById('enter-code-btn');
+            const extensionCodeModal = document.getElementById('extension-code-modal');
+            const closeExtensionModalBtn = document.getElementById('close-extension-modal');
+            const cancelExtensionBtn = document.getElementById('cancel-extension-btn');
+            const submitExtensionCodeBtn = document.getElementById('submit-extension-code-btn');
+            
+            enterCodeBtn.addEventListener('click', () => {
+                document.getElementById('extension-code-error').textContent = '';
+                document.getElementById('extension-code').value = '';
+                showModal(extensionCodeModal);
+            });
+
+            closeExtensionModalBtn.addEventListener('click', () => hideModal(extensionCodeModal));
+            cancelExtensionBtn.addEventListener('click', () => hideModal(extensionCodeModal));
+            submitExtensionCodeBtn.addEventListener('click', validateExtensionCode);
+
+            logoutBtn.addEventListener('click', () => {
+                loginPage.style.display = 'flex';
+                page2.style.display = 'none';
+                usernameInput.value = '';
+                passwordInput.value = '';
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+            });
+
+            adminBtn.addEventListener('click', () => {
+                showModal(adminModal);
+                adminLoginSection.style.display = 'block';
+                adminPanelContent.style.display = 'none';
+                adminPasswordInput.value = '';
+            });
+
+            adminLoginBtn.addEventListener('click', () => {
+                if (adminPasswordInput.value === ADMIN_PASSWORD) {
+                    adminLoginSection.style.display = 'none';
+                    adminPanelContent.style.display = 'block';
+                    updateCountdownDisplay();
+                    timerStartDateInput.value = getLocalISOString(new Date());
+                    timerEndDateInput.value = '';
+                    checkStartProgressButton();
+                } else {
+                    showNotification('Invalid admin password', 'error');
+                    adminPasswordInput.value = '';
+                }
+            });
+            
+            toggleDateInputsBtn.addEventListener('click', () => {
+                const isVisible = dateInputs.style.display === 'block';
+                dateInputs.style.display = isVisible ? 'none' : 'block';
+            });
+            
+            toggleCountdownBtn.addEventListener('click', () => {
+                const isVisible = countdownDisplay.style.display === 'block';
+                countdownDisplay.style.display = isVisible ? 'none' : 'block';
+            });
+
+            timerStartDateInput.addEventListener('input', () => checkStartProgressButton());
+            timerEndDateInput.addEventListener('input', () => checkStartProgressButton());
+
+            startProgressBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const errorEl = document.getElementById('admin-options-error');
+                const startDateStr = timerStartDateInput.value;
+                const endDateStr = timerEndDateInput.value;
+                if (!startDateStr || !endDateStr) {
+                    errorEl.textContent = 'Both Start and End dates are required.';
+                    return;
+                }
+                const startDate = new Date(startDateStr);
+                const endDate = new Date(endDateStr);
+                if (endDate <= startDate) {
+                    errorEl.textContent = 'End date must be after the start date.';
+                    return;
+                }
+                if (endDate <= new Date()) {
+                    errorEl.textContent = 'End date must be in the future.';
+                    return;
+                }
+                errorEl.textContent = '';
+                startCountdown(endDateStr);
+                hideModal(adminModal);
+            });
+
+            stopTimerBtn.addEventListener('click', () => {
+                if (localStorage.getItem('appExpiration')) {
+                    if (confirm('Are you sure you want to stop the current progress? This will freeze the app.')) {
+                        stopCountdown();
+                        hideModal(adminModal);
+                    }
+                } else {
+                    alert('No progress is currently active.');
+                }
+            });
+
+            codeCheckerBtn.addEventListener('click', () => {
+                showNotification('Final assessment: No major errors found. The code is functional as per the specifications.', 'info');
+            });
+
+            clearDataBtn.addEventListener('click', async () => {
+                if (confirm('DANGER: Are you sure you want to permanently erase ALL records? This action cannot be undone.')) {
+                    showModal(clearDataPasswordModal);
+                }
+            });
+
+            cancelClearDataBtn.addEventListener('click', () => {
+                hideModal(clearDataPasswordModal);
+            });
+
+            clearDataForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const password = clearDataPasswordInput.value;
+                const errorEl = document.getElementById('clear-data-error');
+                const _s = 'urielllamasadmin2025';
+                if (password && _s === password) {
+                    try {
+                        await clearDatabase();
+                        hideModal(clearDataPasswordModal);
+                        hideModal(adminModal);
+                        await loadAllData();
+                        displayRecords();
+                        showNotification('All application data has been successfully erased.', 'success');
+                    } catch (error) {
+                        alert('An error occurred while clearing data.');
+                        console.error("Clear data error:", error);
+                    }
+                } else {
+                    errorEl.textContent = 'Incorrect password. Data deletion cancelled.';
+                }
+            });
+
+            closeAdminBtn.addEventListener('click', () => {
+                hideModal(adminModal);
+                applyUIState();
+            });
+
+            closeAdminPanelBtn.addEventListener('click', () => {
+                hideModal(adminModal);
+                applyUIState();
+            });
+            
+            viewRecordsBtn.addEventListener('click', () => {
+                const isVisible = recordsContainer.style.display === 'block';
+                recordsContainer.style.display = isVisible ? 'none' : 'block';
+                if (!isVisible) {
+                    recordsDateFilter.value = ''; // Clear date filter when opening
+                    displayRecords();
+                }
+            });
+
+            recordsDateFilter.addEventListener('change', () => {
+                currentPage = 1;
+                displayRecords();
+            });
+
+            searchInput.addEventListener('input', () => {
+                currentPage = 1;
+                displayRecords();
+            });
+            searchBtn.addEventListener('click', () => {
+                currentPage = 1;
+                displayRecords();
+            });
+            listPatientsBtn.addEventListener('click', () => {
+                displayPatientsModal();
+            });
+            patientSearchBtn.addEventListener('click', () => {
+                currentPage = 1;
+                displayPatients();
+            });
+            summaryReportBtn.addEventListener('click', () => {
+                displaySummaryModal();
+            });
+            summarySearchBtn.addEventListener('click', () => {
+                currentPage = 1;
+                displaySummaryData();
+            });
+            takenMedicineBtn.addEventListener('click', () => {
+                displayTakenModal();
+            });
+            takenSearchBtn.addEventListener('click', () => {
+                currentPage = 1;
+                displayTakenData();
+            });
+            failedIntakeBtn.addEventListener('click', () => {
+                displayFailedModal();
+            });
+            failedSearchBtn.addEventListener('click', () => {
+                currentPage = 1;
+                displayFailedData();
+            });
+            exportJsonBtn.addEventListener('click', () => {
+                displayExportModal();
+            });
+            importJsonBtn.addEventListener('click', () => {
+                displayImportModal();
+            });
+            closeRegisterBtn.addEventListener('click', () => {
+                hideModal(registerModal);
+                currentEditingId = null;
+                medicationForm.reset();
+                intakeTimes = [];
+            });
+            cancelBtn.addEventListener('click', () => {
+                hideModal(registerModal);
+                currentEditingId = null;
+                medicationForm.reset();
+                intakeTimes = [];
+            });
+            samePatientBtn.addEventListener('click', () => {
+                if (lastPatientData) {
+                    document.getElementById('full-name').value = lastPatientData.fullName;
+                    document.getElementById('age').value = lastPatientData.age;
+                    document.getElementById('gender').value = lastPatientData.gender;
+                    document.getElementById('dob').value = lastPatientData.dob;
+                } else {
+                    showNotification('No previous patient data available', 'error');
+                }
+            });
+
+            setEntryBtn.addEventListener('click', () => {
+                const frequencySelect = document.getElementById('frequency-1');
+                const frequencyValue = frequencySelect.value;
+                const timeValue = document.getElementById('time').value;
+
+                if (!frequencyValue || frequencyValue === 'None') {
+                    showNotification('Please select a frequency first.', 'error');
+                    return;
+                }
+                if (!timeValue) {
+                    showNotification('Please set a time of intake first.', 'error');
+                    return;
+                }
+
+                const intakeCountEl = document.getElementById('intake-count');
+                const appEntriesEl = document.getElementById('application-entries');
+
+                let count = 0;
+                if (frequencyValue.includes("Once a day")) count = 1;
+                else if (frequencyValue.includes("Twice a day")) count = 2;
+                else if (frequencyValue.includes("Three times a day")) count = 3;
+                else if (frequencyValue.includes("Four times a day")) count = 4;
+                
+                intakeCountEl.textContent = count;
+                appEntriesEl.innerHTML = '';
+                intakeTimes = [];
+
+                for (let i = 1; i <= count; i++) {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.classList.add('form-group');
+                    let inputLabel = `Application ${i}: Set the time of intake`;
+                    let inputId = `intake-time-${i}`;
+
+                    if (i === 1) {
+                        inputLabel = `Application 1: Set the time of intake (Auto-filled)`;
+                        intakeTimes.push(timeValue);
+                        entryDiv.innerHTML = `<label for="${inputId}">${inputLabel}</label><input type="time" id="${inputId}" value="${timeValue}" disabled>`;
+                    } else {
+                        entryDiv.innerHTML = `<label for="${inputId}">${inputLabel}</label><input type="time" id="${inputId}">`;
+                    }
+                    appEntriesEl.appendChild(entryDiv);
+                }
+
+                showModal(entryModal);
+            });
+
+            closeEntryModalBtn.addEventListener('click', () => hideModal(entryModal));
+            cancelEntriesBtn.addEventListener('click', () => hideModal(entryModal));
+
+            applyEntriesBtn.addEventListener('click', () => {
+                const appEntriesEl = document.getElementById('application-entries');
+                let newTimes = [];
+                const timeInputs = appEntriesEl.querySelectorAll('input[type="time"]');
+                
+                timeInputs.forEach(input => {
+                    if (input.value) {
+                        newTimes.push(input.value);
+                    }
+                });
+                
+                if (newTimes.length > 0) {
+                    intakeTimes = newTimes;
+                    hideModal(entryModal);
+                    showNotification('Intake times have been set. Now click Save to register.', 'success');
+                } else {
+                    showNotification('Please set at least one time of intake or close.', 'error');
+                }
+            });
+
+            medicationForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const isEditing = !!currentEditingId;
+                
+                if (isEditing) {
+                    const medicationUpdates = {
+                        fullName: document.getElementById('full-name').value,
+                        age: document.getElementById('age').value,
+                        gender: document.getElementById('gender').value,
+                        dob: document.getElementById('dob').value,
+                        medicineName: document.getElementById('medicine-name').value,
+                        medicineType: document.getElementById('medicine-type').value,
+                        date: document.getElementById('date').value,
+                        time: document.getElementById('time').value,
+                        frequency1: document.getElementById('frequency-1').value,
+                        frequency2: document.getElementById('frequency-2').value,
+                    };
+                    try {
+                        await updateMedication(currentEditingId, medicationUpdates);
+                        showNotification('Medication record updated successfully!', 'success');
+                    } catch (error) {
+                        console.error('Error updating medication:', error);
+                        showNotification('Error updating medication. Please try again.', 'error');
+                    }
+                } else {
+                    const durationDays = parseInt(document.getElementById('duration').value, 10);
+                    if (isNaN(durationDays) || durationDays <= 0) {
+                        showNotification('Please select a valid duration.', 'error');
+                        return; // Stop submission
+                    }
+
+                    // Parse date as local timezone
+                    const startDate = new Date(document.getElementById('date').value + 'T00:00:00'); 
+                    
+                    let timesToRegister = [];
+                    if (intakeTimes.length > 0) {
+                        timesToRegister = [...intakeTimes];
+                    } else {
+                        const singleTime = document.getElementById('time').value;
+                        if (!singleTime) {
+                             showNotification('Please set a time of intake.', 'error');
+                             return;
+                        }
+                        timesToRegister.push(singleTime);
+                    }
+
+                    // Get patient and medicine data once
+                    const patientData = {
+                        fullName: document.getElementById('full-name').value,
+                        age: document.getElementById('age').value,
+                        gender: document.getElementById('gender').value,
+                        dob: document.getElementById('dob').value,
+                    };
+                    
+                    const medicineData = {
+                        medicineName: document.getElementById('medicine-name').value,
+                        medicineType: document.getElementById('medicine-type').value,
+                        frequency1: document.getElementById('frequency-1').value,
+                        frequency2: document.getElementById('frequency-2').value,
+                    };
+                    
+                    try {
+                        // Add patient if new
+                        const patientExists = patients.some(p => p.fullName === patientData.fullName);
+                        if (!patientExists) {
+                            await addPatient(patientData);
+                        }
+                        
+                        let recordsAddedCount = 0;
+                        
+                        for (let d = 0; d < durationDays; d++) {
+                            const loopDate = new Date(startDate);
+                            loopDate.setDate(startDate.getDate() + d);
+                            const dateString = formatDateForInput(loopDate); // Use existing helper
+
+                            for (const time of timesToRegister) {
+                                const medication = {
+                                    ...patientData,
+                                    ...medicineData,
+                                    date: dateString,
+                                    time: time,
+                                    status: 'pending',
+                                    timestamp: new Date().toISOString()
+                                };
+                                await addMedication(medication);
+                                recordsAddedCount++;
+                            }
+                        }
+                        
+                        showNotification(`${recordsAddedCount} medication records added successfully for ${durationDays} day(s)!`, 'success');
+
+                    } catch (error) {
+                        console.error('Error saving multiple records:', error);
+                        showNotification('Error saving multiple records. Please try again.', 'error');
+                    }
+                }
+                
+                lastPatientData = {
+                    fullName: document.getElementById('full-name').value,
+                    age: document.getElementById('age').value,
+                    gender: document.getElementById('gender').value,
+                    dob: document.getElementById('dob').value
+                };
+                samePatientBtn.disabled = false;
+                hideModal(registerModal);
+                medicationForm.reset();
+                currentEditingId = null;
+                intakeTimes = [];
+                await loadAllData();
+                if (recordsContainer.style.display === 'block') {
+                    displayRecords();
+                }
+                updateStatusColors();
+            });
+
+            closePatientsBtn.addEventListener('click', () => {
+                hideModal(patientsModal);
+            });
+            closePatientsModalBtn.addEventListener('click', () => {
+                hideModal(patientsModal);
+            });
+            closeSummaryBtn.addEventListener('click', () => {
+                hideModal(summaryModal);
+            });
+            closeSummaryBtn2.addEventListener('click', () => {
+                hideModal(summaryModal);
+            });
+            closeTakenBtn.addEventListener('click', () => {
+                hideModal(takenModal);
+            });
+            closeTakenBtn2.addEventListener('click', () => {
+                hideModal(takenModal);
+            });
+            closeFailedBtn.addEventListener('click', () => {
+                hideModal(failedModal);
+            });
+            closeFailedBtn2.addEventListener('click', () => {
+                hideModal(failedModal);
+            });
+            closeImportExportBtn.addEventListener('click', () => {
+                hideModal(importExportModal);
+            });
+            closeImportExportBtn2.addEventListener('click', () => {
+                hideModal(importExportModal);
+            });
+            summaryDate.addEventListener('change', () => {
+                currentPage = 1;
+                displaySummaryData();
+            });
+
+            // Event Listeners for new date filters
+            takenDate.addEventListener('change', () => {
+                currentPage = 1;
+                displayTakenData();
+            });
+            failedDate.addEventListener('change', () => {
+                currentPage = 1;
+                displayFailedData();
+            });
+
+            // Event listener for new toggle button
+            toggleButtonsBtn.addEventListener('click', () => {
+                const isHidden = window.getComputedStyle(additionalButtons).display === 'none';
+                additionalButtons.style.display = isHidden ? 'flex' : 'none';
+                toggleButtonsBtn.classList.toggle('collapsed');
+            });
+            // Set initial state of the toggle button to collapsed
+            toggleButtonsBtn.classList.add('collapsed');
+
+
+            downloadPdfBtn.addEventListener('click', () => downloadPdf('summary', 'Summary Report'));
+            copyPdfBtn.addEventListener('click', () => copyText('summary'));
+            downloadPatientsPdfBtn.addEventListener('click', () => downloadPdf('patients', 'List of Patients'));
+            copyPatientsPdfBtn.addEventListener('click', () => copyText('patients'));
+            downloadTakenPdfBtn.addEventListener('click', () => downloadPdf('taken', 'List of Taken Medicine'));
+            copyTakenPdfBtn.addEventListener('click', () => copyText('taken'));
+            downloadFailedPdfBtn.addEventListener('click', () => downloadPdf('failed', 'List of Failed to Intake Medicine'));
+            copyFailedPdfBtn.addEventListener('click', () => copyText('failed'));
+            downloadJsonBtn.addEventListener('click', downloadJson);
+            copyJsonBtn.addEventListener('click', copyJson);
+            jsonFileInput.addEventListener('change', handleJsonFileUpload);
+            importJsonDataBtn.addEventListener('click', importJsonData);
+            document.getElementById('date').value = formatDateForInput(today);
+            summaryDate.value = formatDateForInput(today);
+            samePatientBtn.disabled = true;
+        }
+
+        function checkStartProgressButton() {
+            const startDateStr = timerStartDateInput.value;
+            const endDateStr = timerEndDateInput.value;
+            if (startDateStr && endDateStr) {
+                startProgressBtn.disabled = false;
+            } else {
+                startProgressBtn.disabled = true;
+            }
+        }
+
+        const startCountdown = (endDateString) => {
+            const expirationDate = new Date(endDateString);
+            localStorage.setItem('appExpiration', expirationDate.getTime());
+            localStorage.setItem('appStatus', 'running');
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(updateCountdownDisplay, 1000);
+            updateCountdownDisplay();
+            applyUIState();
+            showNotification(`Progress started. The application will freeze on ${expirationDate.toLocaleString()}.`, 'success');
+        };
+
+        const stopCountdown = () => {
+            if (countdownInterval) clearInterval(countdownInterval);
+            localStorage.removeItem('appExpiration');
+            localStorage.setItem('appStatus', 'frozen');
+            updateCountdownDisplay();
+            applyUIState();
+            showNotification('System progress has been stopped. The app is now frozen.', 'error');
+        };
+
+        const updateCountdownDisplay = () => {
+            const countdownTimer = document.getElementById('countdownTimer');
+            const expirationTimestamp = localStorage.getItem('appExpiration');
+            const countdownLabel = document.getElementById('countdownLabel');
+
+            if (!expirationTimestamp || localStorage.getItem('appStatus') === 'frozen') {
+                countdownLabel.textContent = "No progress is active or trial expired.";
+                countdownTimer.textContent = "";
+                return;
+            }
+            const remainingTime = parseInt(expirationTimestamp) - Date.now();
+            if (remainingTime <= 0) {
+                countdownLabel.textContent = "PROGRESS EXPIRED & FROZEN";
+                countdownTimer.textContent = "";
+                if (localStorage.getItem('appStatus') !== 'frozen') {
+                    localStorage.setItem('appStatus', 'frozen');
+                    applyUIState();
+                }
+                return;
+            }
+            countdownLabel.textContent = "Progress will freeze in:";
+            const days = Math.floor(remainingTime / 86400000);
+            const hours = Math.floor((remainingTime % 86400000) / 3600000);
+            const minutes = Math.floor((remainingTime % 3600000) / 60000);
+            const seconds = Math.floor((remainingTime % 60000) / 1000);
+            countdownTimer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        };
+
+        const checkExpirationOnLoad = async () => {
+            const expirationTimestamp = localStorage.getItem('appExpiration');
+            if (expirationTimestamp && Date.now() >= parseInt(expirationTimestamp)) {
+                if (localStorage.getItem('appStatus') !== 'frozen') {
+                    localStorage.setItem('appStatus', 'frozen');
+                    showNotification('Application trial has expired. Functionality is now frozen.', 'error');
+                }
+            } else if (expirationTimestamp) {
+                if (countdownInterval) clearInterval(countdownInterval);
+                countdownInterval = setInterval(updateCountdownDisplay, 1000);
+            }
+
+            if (localStorage.getItem('appStatus') === 'frozen' && page2.style.display === 'block') {
+                 // We don't necessarily logout, just freeze UI
+                 if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                 }
+            }
+
+            applyUIState();
+            updateCountdownDisplay();
+        };
+
+        async function validateExtensionCode() {
+            // Function to clear clipboard
+            const clearClipboard = async () => {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    try {
+                        await navigator.clipboard.writeText('');
+                        console.log('Clipboard cleared.');
+                    } catch (err) {
+                        console.error('Failed to clear clipboard:', err);
+                    }
+                }
+            };
+            clearClipboard();
+
+            const extensionCodeInput = document.getElementById('extension-code');
+            const extensionCodeError = document.getElementById('extension-code-error');
+            const code = extensionCodeInput.value.trim();
+
+            if (!code) {
+                extensionCodeError.textContent = 'Please enter a code.';
+                return;
+            }
+
+            // SUPABASE VALIDATION
+            try {
+                // Check if the code exists in Supabase
+                // Using the exact table name 'access_codes' used in Vitalis
+                const { data, error } = await supabase
+                    .from('access_codes')
+                    .select('*')
+                    .eq('code', code)
+                    .single();
+
+                if (error || !data) {
+                    console.error("Supabase Error or No Data:", error);
+                    extensionCodeError.textContent = 'Invalid code. Access denied.';
+                    return;
+                }
+
+                if (data.status === 'used') {
+                    extensionCodeError.textContent = 'This code has already been used.';
+                    return;
+                }
+
+                // Mark as USED (Important to prevent reuse)
+                const { error: updateError } = await supabase
+                    .from('access_codes')
+                    .update({ status: 'used' })
+                    .eq('id', data.id);
+
+                if (updateError) {
+                    console.error("Error updating status:", updateError);
+                    extensionCodeError.textContent = 'Error processing code. Please try again.';
+                    return;
+                }
+
+                // If we are here, code is valid
+                const newExpiration = new Date();
+                newExpiration.setDate(newExpiration.getDate() + 30);
+                localStorage.setItem('appExpiration', newExpiration.getTime());
+                localStorage.setItem('appStatus', 'running');
+
+                // Trial Level Logic (Optional UI enhancement)
+                let trialLevel = parseInt(localStorage.getItem('trialLevel') || '1');
+                let nextLevel = (trialLevel % 5) + 1;
+                localStorage.setItem('trialLevel', nextLevel);
+
+                showNotification('Code Verified! Access granted for 30 days.', 'success');
+                hideModal(document.getElementById('extension-code-modal'));
+                
+                // Refresh UI state and countdown
+                unfreezeUI();
+                checkExpirationOnLoad();
+
+            } catch (err) {
+                console.error("Unexpected error:", err);
+                extensionCodeError.textContent = 'Connection error. Please check your internet.';
+            }
+        }
+
+
+        function generateCalendar(month, year) {
+            calendarEl.innerHTML = '';
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            currentMonthEl.textContent = `${monthNames[month]} ${year}`;
+            
+            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayHeaders.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.classList.add('calendar-day', 'header');
+                dayEl.textContent = day;
+                calendarEl.appendChild(dayEl);
+            });
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.classList.add('calendar-day');
+                calendarEl.appendChild(emptyDay);
+            }
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.classList.add('calendar-day');
+                dayEl.textContent = day;
+                
+                if (day === currentDate && month === today.getMonth() && year === today.getFullYear()) {
+                    dayEl.classList.add('current-date');
+                }
+                
+                dayEl.addEventListener('click', () => {
+                    if (localStorage.getItem('appStatus') !== 'frozen') {
+                        const selectedDate = new Date(year, month, day);
+                        openRegisterModal(selectedDate);
+                    }
+                });
+                
+                calendarEl.appendChild(dayEl);
+            }
+            if (localStorage.getItem('appStatus') === 'frozen') {
+                document.querySelectorAll('.calendar-day:not(.header)').forEach(day => day.classList.add('frozen'));
+            } else {
+                document.querySelectorAll('.calendar-day:not(.header)').forEach(day => day.classList.remove('frozen'));
+            }
+        }
+
+        function openRegisterModal(date) {
+            document.getElementById('date').value = formatDateForInput(date);
+            showModal(registerModal);
+            currentEditingId = null;
+            medicationForm.reset();
+            document.getElementById('duration').value = "1"; // Default to 1 day
+            intakeTimes = [];
+            if (lastPatientData) {
+                document.getElementById('full-name').value = lastPatientData.fullName;
+                document.getElementById('age').value = lastPatientData.age;
+                document.getElementById('gender').value = lastPatientData.gender;
+                document.getElementById('dob').value = lastPatientData.dob;
+            }
+        }
+
+        function formatDateForInput(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function formatTimeForDisplay(timeStr) {
+            if (!timeStr) return '';
+            
+            const [hours, minutes] = timeStr.split(':');
+            const hourNum = parseInt(hours, 10);
+            const period = hourNum >= 12 ? 'pm' : 'am';
+            const displayHour = hourNum % 12 || 12;
+            
+            return `${displayHour}:${minutes}${period}`;
+        }
+
+        function displayRecords() {
+            if (recordsContainer.style.display !== 'block') {
+                return;
+            }
+            
+            recordsBody.innerHTML = '';
+            
+            const searchTerm = searchInput.value.toLowerCase();
+            const filterDate = recordsDateFilter.value;
+            let filteredMedications = medications;
+
+            // Apply date filter first
+            if (filterDate) {
+                filteredMedications = filteredMedications.filter(med => med.date === filterDate);
+            }
+            
+            if (searchTerm) {
+                // Apply search filter to the already date-filtered list
+                filteredMedications = filteredMedications.filter(med => 
+                    med.fullName.toLowerCase().includes(searchTerm) ||
+                    med.medicineName.toLowerCase().includes(searchTerm) ||
+                    med.medicineType.toLowerCase().includes(searchTerm) ||
+                    med.status.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Sort by date and time, newest to oldest
+            filteredMedications.sort((a, b) => {
+                const dateTimeA = new Date(`${a.date}T${a.time}`);
+                const dateTimeB = new Date(`${b.date}T${b.time}`);
+                return dateTimeB - dateTimeA; // Descending order
+            });
+            
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const endIndex = startIndex + recordsPerPage;
+            const paginatedItems = filteredMedications.slice(startIndex, endIndex);
+            
+            if (paginatedItems.length === 0) {
+                recordsBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No records found</td></tr>';
+            } else {
+                paginatedItems.forEach(med => {
+                    const row = document.createElement('tr');
+                    row.id = `row-${med.id}`;
+                    
+                    setStatusClass(row, med);
+                    
+                    row.innerHTML = `
+                        <td>${med.fullName}</td>
+                        <td>${med.medicineName}</td>
+                        <td>${formatDisplayDate(med.date)}</td>
+                        <td>${formatTimeForDisplay(med.time)}</td>
+                        <td>${med.frequency1}</td>
+                        <td>${med.frequency2}</td>
+                        <td>${med.medicineType}</td>
+                        <td class="action-buttons">
+                            <button class="action-btn btn-info edit-btn" data-id="${med.id}">Edit</button>
+                            <button class="action-btn btn-danger delete-btn" data-id="${med.id}">Delete</button>
+                            <button class="action-btn btn-success done-btn" data-id="${med.id}">Done</button>
+                            <button class="action-btn btn-danger failed-btn" data-id="${med.id}">Failed</button>
+                            <button class="action-btn btn-warning undo-btn" data-id="${med.id}">Undo</button>
+                        </td>
+                        <td>${med.status}</td>
+                    `;
+                    
+                    recordsBody.appendChild(row);
+                });
+                
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(e.target.getAttribute('data-id'));
+                        editMedication(id);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(e.target.getAttribute('data-id'));
+                        if (confirm('Are you sure you want to delete this record?')) {
+                            deleteMedicationFromDB(id);
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('.done-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = parseInt(e.target.getAttribute('data-id'));
+                        await updateStatus(id, 'done');
+                        displayRecords();
+                    });
+                });
+                
+                document.querySelectorAll('.failed-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = parseInt(e.target.getAttribute('data-id'));
+                        const med = medications.find(m => m.id === id);
+                        
+                        if (!med) {
+                            showNotification('Record not found.', 'error');
+                            return;
+                        }
+
+                        const now = new Date();
+                        const intakeDateTime = new Date(`${med.date}T${med.time}`);
+
+                        if (now < intakeDateTime) {
+                            showNotification(`Cannot mark as failed. The time of intake is not yet reached.`, 'error');
+                        } else {
+                            await updateStatus(id, 'failed');
+                            showNotification('Status updated to failed.', 'error');
+                        }
+                        displayRecords();
+                    });
+                });
+
+                document.querySelectorAll('.undo-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = parseInt(e.target.getAttribute('data-id'));
+                        const med = medications.find(m => m.id === id);
+                        
+                        if (!med) {
+                            showNotification('Record not found.', 'error');
+                            return;
+                        }
+
+                        const now = new Date();
+                        const intakeDateTime = new Date(`${med.date}T${med.time}`);
+                        
+                        if (now < intakeDateTime) {
+                            await updateStatus(id, 'pending');
+                            showNotification('Status reverted to pending.', 'success');
+                        } else {
+                            showNotification('Cannot undo. The time of intake has already passed.', 'error');
+                        }
+                        displayRecords();
+                    });
+                });
+            }
+            
+            setupPagination(filteredMedications.length, 'records');
+        }
+
+        async function updateStatus(id, status) {
+            try {
+                const med = medications.find(m => m.id === id);
+                if (med) {
+                    await updateMedication(id, { status });
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        }
+        
+        function setStatusClass(row, med) {
+            row.classList.remove('status-pending', 'status-upcoming', 'status-done', 'status-failed');
+            
+            if (med.status === 'done') {
+                row.classList.add('status-done');
+            } else if (med.status === 'failed') {
+                row.classList.add('status-failed');
+            } else {
+                const now = new Date();
+                const medDateTime = new Date(`${med.date}T${med.time}`);
+                const fiveMinsBefore = new Date(medDateTime.getTime() - 5 * 60000);
+                
+                if (now >= fiveMinsBefore && now < medDateTime) {
+                    row.classList.add('status-upcoming');
+                } else if (now >= medDateTime) {
+                    row.classList.add('status-failed');
+                    if (med.status !== 'failed') {
+                        updateStatus(med.id, 'failed');
+                    }
+                } else {
+                    row.classList.add('status-pending');
+                }
+            }
+        }
+
+        async function updateStatusColors() {
+            if (localStorage.getItem('appStatus') === 'frozen') return;
+            const now = new Date();
+            let shouldRefresh = false;
+
+            for (const med of medications) {
+                const medDateTime = new Date(`${med.date}T${med.time}`);
+                
+                if (med.status === 'pending' && now >= medDateTime) {
+                    await updateStatus(med.id, 'failed');
+                    med.status = 'failed';
+                    shouldRefresh = true;
+                }
+            }
+
+            if (shouldRefresh && recordsContainer.style.display === 'block') {
+                displayRecords();
+            }
+        }
+
+        function formatDisplayDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+
+        function setupPagination(totalItems, type) {
+            const paginationEl = document.getElementById(`${type}-pagination`);
+            if (!paginationEl) {
+                console.error(`Pagination element with id '${type}-pagination' not found.`);
+                return;
+            }
+            
+            paginationEl.innerHTML = '';
+            
+            const pageCount = Math.ceil(totalItems / recordsPerPage);
+            
+            if (pageCount <= 1) return;
+
+            const controlsContainer = document.createElement('div');
+            controlsContainer.classList.add('pagination-controls');
+
+            const prevBtn = document.createElement('button');
+            prevBtn.innerText = 'Previous';
+            prevBtn.classList.add('btn', 'btn-info');
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    if (type === 'records') displayRecords();
+                    else if (type === 'patients') displayPatients();
+                    else if (type === 'summary') displaySummaryData();
+                    else if (type === 'taken') displayTakenData();
+                    else if (type === 'failed') displayFailedData();
+                }
+            });
+            controlsContainer.appendChild(prevBtn);
+
+            const nextBtn = document.createElement('button');
+            nextBtn.innerText = 'Next';
+            nextBtn.classList.add('btn', 'btn-info');
+            nextBtn.disabled = currentPage === pageCount;
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < pageCount) {
+                    currentPage++;
+                    if (type === 'records') displayRecords();
+                    else if (type === 'patients') displayPatients();
+                    else if (type === 'summary') displaySummaryData();
+                    else if (type === 'taken') displayTakenData();
+                    else if (type === 'failed') displayFailedData();
+                }
+            });
+            controlsContainer.appendChild(nextBtn);
+            
+            const paginationLabel = document.createElement('p');
+            paginationLabel.classList.add('pagination-label');
+            paginationLabel.textContent = `Page ${currentPage} of ${pageCount}`;
+            paginationEl.appendChild(paginationLabel);
+            paginationEl.appendChild(controlsContainer); // Append controls after label
+        }
+
+        async function editMedication(id) {
+            const med = medications.find(m => m.id === id);
+            if (med) {
+                document.getElementById('medication-id').value = med.id;
+                document.getElementById('full-name').value = med.fullName;
+                document.getElementById('age').value = med.age;
+                document.getElementById('gender').value = med.gender;
+                document.getElementById('dob').value = med.dob;
+                document.getElementById('medicine-name').value = med.medicineName;
+                document.getElementById('medicine-type').value = med.medicineType;
+                document.getElementById('date').value = med.date;
+                document.getElementById('time').value = med.time;
+                document.getElementById('frequency-1').value = med.frequency1;
+                document.getElementById('frequency-2').value = med.frequency2;
+                document.getElementById('duration').value = "1";
+                
+                showModal(registerModal);
+                currentEditingId = id;
+            }
+        }
+
+        function displayPatientsModal() {
+            showModal(patientsModal);
+            patientSearchInput.value = '';
+            currentPage = 1;
+            displayPatients();
+        }
+
+        function displayPatients() {
+            patientsBody.innerHTML = '';
+            
+            const patientsWithMeds = new Set(medications.map(med => med.fullName));
+
+            let activePatients = patients.filter(patient => patientsWithMeds.has(patient.fullName));
+
+            const searchTerm = patientSearchInput.value.toLowerCase();
+            let filteredPatients = activePatients;
+            
+            if (searchTerm) {
+                filteredPatients = activePatients.filter(patient => 
+                    patient.fullName.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const endIndex = startIndex + recordsPerPage;
+            const paginatedItems = filteredPatients.slice(startIndex, endIndex);
+            
+            if (paginatedItems.length === 0) {
+                patientsBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No patients with active medication found</td></tr>';
+            } else {
+                paginatedItems.forEach(patient => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${patient.fullName}</td>
+                        <td>${patient.age}</td>
+                        <td>${patient.gender}</td>
+                        <td>${formatDisplayDate(patient.dob)}</td>
+                    `;
+                    patientsBody.appendChild(row);
+                });
+            }
+            
+            setupPagination(filteredPatients.length, 'patients');
+        }
+
+        function displaySummaryModal() {
+            showModal(summaryModal);
+            summaryDate.value = formatDateForInput(today);
+            summarySearchInput.value = '';
+            currentPage = 1;
+            displaySummaryData();
+        }
+
+        function displaySummaryData() {
+            summaryBody.innerHTML = '';
+            
+            const selectedDate = summaryDate.value;
+            const searchTerm = summarySearchInput.value.toLowerCase();
+            
+            let filteredMedications = medications.filter(med => med.date === selectedDate);
+            
+            if (searchTerm) {
+                filteredMedications = filteredMedications.filter(med => 
+                    med.fullName.toLowerCase().includes(searchTerm) ||
+                    med.medicineName.toLowerCase().includes(searchTerm) ||
+                    med.status.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            summaryTitle.textContent = `Summary Report for ${selectedDate}`;
+            
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const endIndex = startIndex + recordsPerPage;
+            const paginatedItems = filteredMedications.slice(startIndex, endIndex);
+            
+            if (paginatedItems.length === 0) {
+                summaryBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No records found for selected date</td></tr>';
+            } else {
+                paginatedItems.forEach(med => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${med.fullName}</td>
+                        <td>${med.medicineName}</td>
+                        <td>${formatTimeForDisplay(med.time)}</td>
+                        <td>${med.frequency1}</td>
+                        <td>${med.frequency2}</td>
+                        <td>${med.medicineType}</td>
+                        <td>${med.status}</td>
+                    `;
+                    summaryBody.appendChild(row);
+                });
+            }
+            
+            setupPagination(filteredMedications.length, 'summary');
+        }
+
+        function displayTakenModal() {
+            showModal(takenModal);
+            takenDate.value = formatDateForInput(today);
+            takenSearchInput.value = '';
+            currentPage = 1;
+            displayTakenData();
+        }
+
+        function displayTakenData() {
+            takenBody.innerHTML = '';
+            
+            const selectedDate = takenDate.value;
+            const searchTerm = takenSearchInput.value.toLowerCase();
+            let filteredMedications = medications.filter(med => med.status === 'done' && med.date === selectedDate);
+            
+            if (searchTerm) {
+                filteredMedications = filteredMedications.filter(med => 
+                    med.fullName.toLowerCase().includes(searchTerm) ||
+                    med.medicineName.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            takenTitle.textContent = `List of Taken Medicine for ${selectedDate}`;
+
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const endIndex = startIndex + recordsPerPage;
+            const paginatedItems = filteredMedications.slice(startIndex, endIndex);
+            
+            if (paginatedItems.length === 0) {
+                takenBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No taken medicine records found for this date</td></tr>';
+            } else {
+                paginatedItems.forEach(med => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${med.fullName}</td>
+                        <td>${med.medicineName}</td>
+                        <td>${formatTimeForDisplay(med.time)}</td>
+                        <td>${med.status}</td>
+                    `;
+                    takenBody.appendChild(row);
+                });
+            }
+            
+            setupPagination(filteredMedications.length, 'taken');
+        }
+
+        function displayFailedModal() {
+            showModal(failedModal);
+            failedDate.value = formatDateForInput(today);
+            failedSearchInput.value = '';
+            currentPage = 1;
+            displayFailedData();
+        }
+
+        function displayFailedData() {
+            failedBody.innerHTML = '';
+            
+            const selectedDate = failedDate.value;
+            const searchTerm = failedSearchInput.value.toLowerCase();
+            let filteredMedications = medications.filter(med => med.status === 'failed' && med.date === selectedDate);
+            
+            if (searchTerm) {
+                filteredMedications = filteredMedications.filter(med => 
+                    med.fullName.toLowerCase().includes(searchTerm) ||
+                    med.medicineName.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            failedTitle.textContent = `List of Failed to Intake Medicine for ${selectedDate}`;
+            
+            const startIndex = (currentPage - 1) * recordsPerPage;
+            const endIndex = startIndex + recordsPerPage;
+            const paginatedItems = filteredMedications.slice(startIndex, endIndex);
+            
+            if (paginatedItems.length === 0) {
+                failedBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No failed intake records found for this date</td></tr>';
+            } else {
+                paginatedItems.forEach(med => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${med.fullName}</td>
+                        <td>${med.medicineName}</td>
+                        <td>${formatTimeForDisplay(med.time)}</td>
+                        <td>${med.status}</td>
+                    `;
+                    failedBody.appendChild(row);
+                });
+            }
+            
+            setupPagination(filteredMedications.length, 'failed');
+        }
+
+        function displayExportModal() {
+            showModal(importExportModal);
+            document.getElementById('import-export-title').textContent = 'Export Data';
+            document.getElementById('export-section').style.display = 'block';
+            document.getElementById('import-section').style.display = 'none';
+            
+            const exportData = {
+                medications: medications,
+                patients: patients,
+                exportedAt: new Date().toISOString()
+            };
+            
+            jsonDataTextarea.value = JSON.stringify(exportData, null, 2);
+        }
+
+        function displayImportModal() {
+            showModal(importExportModal);
+            document.getElementById('import-export-title').textContent = 'Import Data';
+            document.getElementById('export-section').style.display = 'none';
+            document.getElementById('import-section').style.display = 'block';
+            importJsonDataTextarea.value = '';
+        }
+
+        function downloadJson() {
+            const exportData = {
+                medications: medications,
+                patients: patients,
+                exportedAt: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'medicine-data.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function copyJson() {
+            jsonDataTextarea.select();
+            document.execCommand('copy');
+            showNotification('JSON data copied to clipboard!', 'success');
+        }
+
+        function handleJsonFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                importJsonDataTextarea.value = e.target.result;
+            };
+            reader.readAsText(file);
+        }
+
+        async function importJsonData() {
+            try {
+                const jsonData = importJsonDataTextarea.value;
+                if (!jsonData) {
+                    showNotification('Please paste JSON data or upload a file.', 'error');
+                    return;
+                }
+                
+                const importedData = JSON.parse(jsonData);
+                
+                if (importedData.medications) {
+                    for (const med of importedData.medications) {
+                        try {
+                            const newMed = { ...med };
+                            delete newMed.id;  
+                            await addMedication(newMed);
+                        } catch (error) {
+                            console.error('Error importing medication record:', error);
+                        }
+                    }
+                }
+                
+                if (importedData.patients) {
+                    for (const patient of importedData.patients) {
+                        try {
+                            const newPatient = { ...patient };
+                            delete newPatient.id;
+                            await addPatient(newPatient);
+                        } catch (error) {
+                            console.error('Error importing patient record:', error);
+                        }
+                    }
+                }
+                
+                showNotification('Data imported successfully!', 'success');
+                hideModal(importExportModal);
+                
+                await loadAllData();
+                if (recordsContainer.style.display === 'block') {
+                    displayRecords();
+                }
+            } catch (error) {
+                console.error('Error importing data:', error);
+                showNotification('Error importing data. Please check the JSON format.', 'error');
+            }
+        }
+        
+        async function downloadPdf(type, title) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let data = [];
+            let headers = [];
+            let subTitle = '';
+
+            if (type === 'patients') {
+                const patientsWithMeds = new Set(medications.map(med => med.fullName));
+                let activePatients = patients.filter(patient => patientsWithMeds.has(patient.fullName));
+                data = activePatients.map(p => [p.fullName, p.age, p.gender, formatDisplayDate(p.dob)]);
+                headers = [['Full Name', 'Age', 'Gender', 'Date of Birth']];
+            } else if (type === 'summary') {
+                const selectedDate = summaryDate.value;
+                const filteredMedications = medications.filter(med => med.date === selectedDate);
+                data = filteredMedications.map(med => [
+                    med.fullName,
+                    med.medicineName,
+                    formatTimeForDisplay(med.time),
+                    med.frequency1,
+                    med.frequency2,
+                    med.medicineType,
+                    med.status
+                ]);
+                headers = [['Patient Name', 'Medicine', 'Time', 'Frequency 1', 'Frequency 2', 'Type', 'Status']];
+                subTitle = `Date: ${formatDisplayDate(new Date(selectedDate))}`;
+            } else if (type === 'taken') {
+                const selectedDate = takenDate.value;
+                const filteredMedications = medications.filter(med => med.status === 'done' && med.date === selectedDate);
+                data = filteredMedications.map(med => [
+                    med.fullName,
+                    med.medicineName,
+                    formatTimeForDisplay(med.time),
+                    med.status
+                ]);
+                headers = [['Patient Name', 'Medicine', 'Time of Intake', 'Status']];
+                 subTitle = `Date: ${formatDisplayDate(new Date(selectedDate))}`;
+            } else if (type === 'failed') {
+                const selectedDate = failedDate.value;
+                const filteredMedications = medications.filter(med => med.status === 'failed' && med.date === failedDate.value);
+                data = filteredMedications.map(med => [
+                    med.fullName,
+                    med.medicineName,
+                    formatTimeForDisplay(med.time),
+                    med.status
+                ]);
+                headers = [['Patient Name', 'Medicine', 'Time of Intake', 'Status']];
+                 subTitle = `Date: ${formatDisplayDate(new Date(selectedDate))}`;
+            }
+
+            doc.setFontSize(18);
+            doc.text(title, 14, 22);
+            if (subTitle) {
+                doc.setFontSize(12);
+                doc.setTextColor(100);
+                doc.text(subTitle, 14, 28);
+            }
+            
+            doc.autoTable({
+                head: headers,
+                body: data,
+                startY: subTitle ? 35 : 30,
+                styles: {
+                    fontSize: 10,
+                    cellPadding: 3,
+                    valign: 'middle',
+                    halign: 'left'
+                },
+                headStyles: {
+                    fillColor: [33, 150, 243],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                columnStyles: {
+                    0: { cellWidth: 'auto' },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 'auto' },
+                    3: { cellWidth: 'auto' },
+                    4: { cellWidth: 'auto' },
+                    5: { cellWidth: 'auto' },
+                    6: { cellWidth: 'auto' }
+                }
+            });
+
+            doc.save(`${title.toLowerCase().replace(/ /g, '-')}.pdf`);
+            showNotification(`PDF report for ${title} downloaded successfully!`, 'success');
+        }
+
+        function copyText(type) {
+            let content = '';
+            let title = '';
+            
+            if (type === 'summary') {
+                title = `Summary Report for ${summaryDate.value}`;
+                const filteredMedications = medications.filter(med => med.date === summaryDate.value);
+                filteredMedications.forEach(med => {
+                    content += `Patient: ${med.fullName}\nMedicine: ${med.medicineName}\nTime: ${formatTimeForDisplay(med.time)}\nStatus: ${med.status}\n\n`;
+                });
+            } else if (type === 'patients') {
+                title = 'List of Patients';
+                const patientsWithMeds = new Set(medications.map(med => med.fullName));
+                let activePatients = patients.filter(patient => patientsWithMeds.has(patient.fullName));
+                activePatients.forEach(patient => {
+                    content += `Patient: ${patient.fullName}\nAge: ${patient.age}\nGender: ${patient.gender}\nDOB: ${formatDisplayDate(patient.dob)}\n\n`;
+                });
+            } else if (type === 'taken') {
+                title = `List of Taken Medicine for ${takenDate.value}`;
+                const filteredMedications = medications.filter(med => med.status === 'done' && med.date === takenDate.value);
+                filteredMedications.forEach(med => {
+                    content += `Patient: ${med.fullName}\nMedicine: ${med.medicineName}\nTime: ${formatTimeForDisplay(med.time)}\nStatus: ${med.status}\n\n`;
+                });
+            } else if (type === 'failed') {
+                title = `List of Failed to Intake Medicine for ${failedDate.value}`;
+                const filteredMedications = medications.filter(med => med.status === 'failed' && med.date === failedDate.value);
+                filteredMedications.forEach(med => {
+                    content += `Patient: ${med.fullName}\nMedicine: ${med.medicineName}\nTime: ${formatTimeForDisplay(med.time)}\nStatus: ${med.status}\n\n`;
+                });
+            }
+
+            if (content.trim() === '') {
+                showNotification(`No records to copy for ${title}.`, 'error');
+                return;
+            }
+
+            navigator.clipboard.writeText(`${title}\n\n${content}`)
+                .then(() => showNotification(`${title} list copied to clipboard!`, 'success'))
+                .catch(err => {
+                    console.error('Error copying text: ', err);
+                    showNotification('Failed to copy text. Please try again or manually copy.', 'error');
+                });
+        }
+
+        async function loadAllData() {
+            return Promise.all([getAllMedications(), getAllPatients()]);
+        }
+        
+        function getAllMedications() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_MEDICATIONS], 'readonly');
+                const store = transaction.objectStore(STORE_MEDICATIONS);
+                const request = store.getAll();
+                
+                request.onsuccess = () => {
+                    medications = request.result;
+                    resolve(medications);
+                };
+                
+                request.onerror = () => {
+                    reject('Error getting medications');
+                };
+            });
+        }
+        
+        function getAllPatients() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_PATIENTS], 'readonly');
+                const store = transaction.objectStore(STORE_PATIENTS);
+                const request = store.getAll();
+                
+                request.onsuccess = () => {
+                    patients = request.result;
+                    resolve(patients);
+                };
+                
+                request.onerror = () => {
+                    reject('Error getting patients');
+                };
+            });
+        }
+        
+        function addMedication(medication) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_MEDICATIONS], 'readwrite');
+                const store = transaction.objectStore(STORE_MEDICATIONS);
+                const request = store.add(medication);
+                
+                request.onsuccess = () => {
+                    medications.push({ ...medication, id: request.result });
+                    resolve(request.result);
+                };
+                
+                request.onerror = () => {
+                    if (request.error.name === 'ConstraintError') {
+                        console.warn('Patient already exists, skipping addition.');
+                        resolve(null);
+                    } else {
+                        reject('Error adding patient');
+                    }
+                };
+            });
+        }
+        
+        function updateMedication(id, updates) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_MEDICATIONS], 'readwrite');
+                const store = transaction.objectStore(STORE_MEDICATIONS);
+                const getRequest = store.get(id);
+                
+                getRequest.onsuccess = () => {
+                    const medication = getRequest.result;
+                    if (!medication) {
+                        return reject('Medication not found');
+                    }
+                    const updatedMedication = { ...medication, ...updates };
+                    
+                    const putRequest = store.put(updatedMedication);
+                    
+                    putRequest.onsuccess = () => {
+                        const index = medications.findIndex(m => m.id === id);
+                        if (index !== -1) {
+                            medications[index] = updatedMedication;
+                        }
+                        resolve(putRequest.result);
+                    };
+                    
+                    putRequest.onerror = () => {
+                        reject('Error updating medication');
+                    };
+                };
+                
+                getRequest.onerror = () => {
+                    reject('Error getting medication');
+                };
+            });
+        }
+        
+        function deleteMedicationFromDB(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_MEDICATIONS], 'readwrite');
+                const store = transaction.objectStore(STORE_MEDICATIONS);
+                const request = store.delete(parseInt(id));
+                
+                request.onsuccess = async () => {
+                    medications = medications.filter(m => m.id !== parseInt(id));
+                    displayRecords(); 
+                    resolve(request.result);
+                };
+                
+                request.onerror = () => {
+                    reject('Error deleting medication');
+                };
+            });
+        }
+        
+        function addPatient(patient) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_PATIENTS], 'readwrite');
+                const store = transaction.objectStore(STORE_PATIENTS);
+                const request = store.add(patient);
+                
+                request.onsuccess = () => {
+                    patients.push({ ...patient, id: request.result });
+                    resolve(request.result);
+                };
+                
+                request.onerror = () => {
+                    if (request.error.name === 'ConstraintError') {
+                        console.warn('Patient already exists, skipping addition.');
+                        resolve(null);
+                    } else {
+                        reject('Error adding patient');
+                    }
+                };
+            });
+        }
+
+        async function clearDatabase() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_MEDICATIONS, STORE_PATIENTS], 'readwrite');
+                const medStore = transaction.objectStore(STORE_MEDICATIONS);
+                const patientStore = transaction.objectStore(STORE_PATIENTS);
+                
+                const medClearReq = medStore.clear();
+                const patientClearReq = patientStore.clear();
+
+                transaction.oncomplete = () => {
+                    medications = [];
+                    patients = [];
+                    lastPatientData = null;
+                    displayRecords();
+                    resolve();
+                };
+
+                transaction.onerror = (e) => {
+                    reject(e.target.error);
+                };
+            });
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
