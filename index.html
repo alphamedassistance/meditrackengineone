@@ -15,6 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -163,8 +164,8 @@
         :root {
             --primary-color: #007bff;   
             --secondary-color: #6c757d; 
-            --border-color: #dee2e6;    
-        }
+            --border-color: #dee2e6;
+            }
 
         .portal-links {
             margin-top: 25px;
@@ -886,7 +887,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="modal" id="patients-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -975,8 +976,8 @@
                 <h3>List of Taken Medicine</h3>
                 <span class="close" id="close-taken">&times;</span>
             </div>
-            <div class="pdf-content">
-                 <div class="form-row" style="margin-bottom: 15px;">
+            <div class="pdf-content"> 
+                <div class="form-row" style="margin-bottom: 15px;">
                     <div class="form-col">
                         <label for="taken-date">Select Date</label>
                         <input type="date" id="taken-date" required>
@@ -1080,7 +1081,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="modal" id="admin-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1132,7 +1133,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="modal" id="clearDataPasswordModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1173,6 +1174,7 @@
 
     <script>
         // --- SUPABASE CONFIGURATION ---
+        // GLOBAL DECLARATION - DO NOT REMOVE
         const supabaseUrl = 'https://wmciiqeywkluzkslzsrq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtY2lpcWV5d2tsdXprc2x6c3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNDk0MjksImV4cCI6MjA3OTgyNTQyOX0.qVXO8GcXW8AsjWT4N-zkfW5B0g5qijoPX2mOZc4btVQ';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -1223,7 +1225,6 @@
             console.log('PWA was successfully installed');
         });
         // --- END PWA LOGIC ---
-
 
         // Database setup
         let db;
@@ -1479,7 +1480,7 @@
                         
                         if (localStorage.getItem('appStatus') === 'running' && !timerInterval) {
                             timerInterval = setInterval(updateStatusColors, 60000);
-                        } else if (localStorage.getItem('appStatus') === 'frozen') {
+                        } else if (localStorage.getItem('appStatus') === 'frozen') { 
                              showNotification('Application is in Freeze Mode. Please enter Access Code.', 'info');
                         }
                     } else {
@@ -1850,7 +1851,7 @@
                         timesToRegister = [...intakeTimes];
                     } else {
                         const singleTime = document.getElementById('time').value;
-                        if (!singleTime) {
+                        if (!singleTime) { 
                              showNotification('Please set a time of intake.', 'error');
                              return;
                         }
@@ -1980,7 +1981,6 @@
             // Set initial state of the toggle button to collapsed
             toggleButtonsBtn.classList.add('collapsed');
 
-
             downloadPdfBtn.addEventListener('click', () => downloadPdf('summary', 'Summary Report'));
             copyPdfBtn.addEventListener('click', () => copyText('summary'));
             downloadPatientsPdfBtn.addEventListener('click', () => downloadPdf('patients', 'List of Patients'));
@@ -2068,11 +2068,11 @@
                 countdownInterval = setInterval(updateCountdownDisplay, 1000);
             }
 
-            if (localStorage.getItem('appStatus') === 'frozen' && page2.style.display === 'block') {
+            if (localStorage.getItem('appStatus') === 'frozen' && page2.style.display === 'block') { 
                  // We don't necessarily logout, just freeze UI
                  if (timerInterval) {
                     clearInterval(timerInterval);
-                    timerInterval = null;
+                    timerInterval = null; 
                  }
             }
 
@@ -2159,7 +2159,6 @@
                 extensionCodeError.textContent = 'Connection error. Please check your internet.';
             }
         }
-
 
         function generateCalendar(month, year) {
             calendarEl.innerHTML = '';
@@ -2848,8 +2847,8 @@
                     formatTimeForDisplay(med.time),
                     med.status
                 ]);
-                headers = [['Patient Name', 'Medicine', 'Time of Intake', 'Status']];
-                 subTitle = `Date: ${formatDisplayDate(new Date(selectedDate))}`;
+                headers = [['Patient Name', 'Medicine', 'Time of Intake', 'Status']]; 
+                subTitle = `Date: ${formatDisplayDate(new Date(selectedDate))}`;
             } else if (type === 'failed') {
                 const selectedDate = failedDate.value;
                 const filteredMedications = medications.filter(med => med.status === 'failed' && med.date === failedDate.value);
@@ -2859,8 +2858,8 @@
                     formatTimeForDisplay(med.time),
                     med.status
                 ]);
-                headers = [['Patient Name', 'Medicine', 'Time of Intake', 'Status']];
-                 subTitle = `Date: ${formatDisplayDate(new Date(selectedDate))}`;
+                headers = [['Patient Name', 'Medicine', 'Time of Intake', 'Status']]; 
+                subTitle = `Date: ${formatDisplayDate(new Date(selectedDate))}`;
             }
 
             doc.setFontSize(18);
@@ -3105,5 +3104,4 @@
         initApp();
     </script>
 </body>
-
 </html>
