@@ -1177,7 +1177,9 @@
         // GLOBAL DECLARATION - DO NOT REMOVE
         const supabaseUrl = 'https://wmciiqeywkluzkslzsrq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtY2lpcWV5d2tsdXprc2x6c3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNDk0MjksImV4cCI6MjA3OTgyNTQyOX0.qVXO8GcXW8AsjWT4N-zkfW5B0g5qijoPX2mOZc4btVQ';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // FIX: Renamed 'supabase' to 'supabaseClient' to avoid conflict with the library itself
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // --- PWA INSTALLATION LOGIC ---
         let deferredPrompt;
@@ -2106,8 +2108,8 @@
             // SUPABASE VALIDATION
             try {
                 // Check if the code exists in Supabase
-                // Using the exact table name 'access_codes' used in Vitalis
-                const { data, error } = await supabase
+                // FIX: Updated to use 'supabaseClient'
+                const { data, error } = await supabaseClient
                     .from('access_codes')
                     .select('*')
                     .eq('code', code)
@@ -2125,7 +2127,8 @@
                 }
 
                 // Mark as USED (Important to prevent reuse)
-                const { error: updateError } = await supabase
+                // FIX: Updated to use 'supabaseClient'
+                const { error: updateError } = await supabaseClient
                     .from('access_codes')
                     .update({ status: 'used' })
                     .eq('id', data.id);
