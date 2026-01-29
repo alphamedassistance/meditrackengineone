@@ -1,29 +1,24 @@
 const CACHE_NAME = 'meditrack-v1-offline';
 
-// List of files to cache immediately when the app loads
+// 1. INSTALL EVENT: Cache ONLY local core files
+// We removed the external CDN links here to prevent installation failure.
+// They will be cached dynamically in the fetch event below.
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png',
-  // External Libraries (Caching these ensures app works offline)
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js'
+  './icon-512.png'
 ];
 
-// 1. INSTALL EVENT: Cache core files
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing Service Worker ...');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching all: app shell and content');
+      console.log('[Service Worker] Caching app shell');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
-  // Force the waiting service worker to become the active service worker
   self.skipWaiting();
 });
 
@@ -40,41 +35,40 @@ self.addEventListener('activate', (event) => {
       }));
     })
   );
-  // Claim control of all clients immediately
   return self.clients.claim();
 });
 
-// 3. FETCH EVENT: Offline-First Strategy
-// Check cache first. If found, return it. If not, fetch from network and cache the result.
+// 3. FETCH EVENT: Stale-While-Revalidate Strategy
 self.addEventListener('fetch', (event) => {
+  // Handle Supabase and other external requests
   event.respondWith(
-    caches.match(event.request).then((response) => {
+    caches.match(event.request).then((cachedResponse) => {
       // Return cached response if found
-      if (response) {
-        return response;
+      if (cachedResponse) {
+        return cachedResponse;
       }
-      
-      // Otherwise, fetch from network
+
+      // Otherwise fetch from network
       return fetch(event.request).then((networkResponse) => {
         // Check if we received a valid response
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          // If response is opaque (like CDNs sometimes), we still return it but might not cache depending on strictness.
-          // For this app, we return the network response directly if we can't cache it properly.
-          return networkResponse;
+        // We ALLOW 'cors' type now so external CDNs can be cached
+        if (!networkResponse || networkResponse.status !== 200) {
+            return networkResponse;
         }
 
-        // Clone the response because it's a stream and can only be consumed once
+        // Clone response to cache it
         const responseToCache = networkResponse.clone();
-
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+        
+        // Only cache GET requests (don't cache API POST/PUT calls)
+        if (event.request.method === 'GET') {
+            caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseToCache);
+            });
+        }
 
         return networkResponse;
-      }).catch((err) => {
-        // Network failed (offline) and not in cache
-        console.log('[Service Worker] Fetch failed:', err);
-        // You could return a custom offline.html here if you wanted
+      }).catch(() => {
+         // Optional: Return a fallback page if offline and resource not cached
       });
     })
   );
