@@ -120,7 +120,7 @@
             margin-bottom: 20px;
         }
 
-        .form-group label {
+        .form-group label, .form-group p {
             display: block;
             margin-bottom: 5px;
             font-weight: 600;
@@ -2760,7 +2760,7 @@
                 subTitle = `Date: ${formatDisplayDate(new Date(selectedDate))}`;
             } else if (type === 'taken') {
                 const selectedDate = takenDate.value;
-                const filteredMedications = medications.filter(med => med.status === 'done' && med.date === selectedDate);
+                const filteredMedications = medications.filter(med => med.status === 'done' && med.date === takenDate.value);
                 data = filteredMedications.map(med => [
                     med.fullName,
                     med.medicineName,
