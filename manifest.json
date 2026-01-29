@@ -2,7 +2,7 @@
   "name": "MediTrack Medicine Tracker",
   "short_name": "MediTrack",
   "start_url": "./index.html",
-  "id": "/",
+  "id": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f5f7fa",
@@ -10,30 +10,14 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "./icon-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "icon-512.png",
+      "src": "./icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshot-mobile.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Mobile View"
-    },
-    {
-      "src": "screenshot-desktop.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Desktop View"
     }
   ]
 }
