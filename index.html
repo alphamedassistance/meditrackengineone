@@ -7,11 +7,10 @@
     <meta name="description" content="MediTrack - Medicine Tracking Application">
     <title>MediTrack ver. 1.0</title>
     
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon-192.png">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
@@ -22,14 +21,14 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on Android */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: #f5f7fa;
             color: #333;
             line-height: 1.6;
-            overflow-x: hidden; /* Prevent horizontal scroll on body */
+            overflow-x: hidden;
         }
 
         .container {
@@ -41,7 +40,7 @@
 
         /* Install Button Styles */
         #install-btn-container {
-            display: none; /* Hidden by default, shown via JS */
+            display: none; /* Hidden by default, triggers via JS */
             margin-top: 25px;
             text-align: center;
             width: 100%;
@@ -69,7 +68,6 @@
             100% { transform: scale(1); }
         }
 
-        /* Responsive adjustments for the main layout */
         .header {
             display: flex;
             justify-content: space-between;
@@ -78,7 +76,7 @@
             background-color: white;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
-            flex-wrap: wrap; /* Allow wrapping on small screens */
+            flex-wrap: wrap;
             gap: 10px;
         }
 
@@ -144,11 +142,10 @@
             font-size: 16px;
             font-weight: 600;
             transition: all 0.3s ease;
-            width: 100%; /* Default to full width on mobile/small contexts */
+            width: 100%;
             text-align: center;
         }
 
-        /* Button Colors */
         .btn-primary { background-color: #4CAF50; color: white; }
         .btn-primary:hover { background-color: #45a049; }
         .btn-danger { background-color: #f44336; color: white; }
@@ -160,17 +157,10 @@
         .btn-warning { background-color: #FF9800; color: white; }
         .btn-warning:hover { background-color: #e68a00; }
 
-        /* --- PORTAL LINKS STYLES START --- */
-        :root {
-            --primary-color: #007bff;   
-            --secondary-color: #6c757d; 
-            --border-color: #dee2e6;
-            }
-
         .portal-links {
             margin-top: 25px;
             text-align: left;
-            border-top: 1px solid var(--border-color);
+            border-top: 1px solid #dee2e6;
             padding-top: 20px;
             font-family: Arial, sans-serif;
         }
@@ -180,7 +170,7 @@
         }
 
         .portal-link-item {
-            color: var(--secondary-color);
+            color: #6c757d;
             text-decoration: none;
             font-size: 0.9em;
             transition: color 0.3s;
@@ -190,7 +180,7 @@
         }
 
         .portal-link-item:hover {
-            color: var(--primary-color);
+            color: #007bff;
             text-decoration: underline;
         }
 
@@ -199,9 +189,7 @@
             margin-right: 8px;
             vertical-align: middle;
         }
-        /* --- PORTAL LINKS STYLES END --- */
 
-        /* Page 2 Styles */
         .page-2 {
             display: none;
         }
@@ -210,7 +198,6 @@
             opacity: 0; 
         }
 
-        /* Calendar and Modal styling */
         .calendar-container, .records-container, .modal-content {
             background: white;
             border-radius: 10px;
@@ -221,7 +208,6 @@
             width: 100%;
         }
         
-        /* CALENDAR SPECIFIC STYLES - FIXED FOR ANDROID/MOBILE */
         .calendar-header {
             display: flex;
             justify-content: center;
@@ -256,7 +242,7 @@
             padding: 10px;
             border-radius: 5px;
             cursor: pointer;
-            min-height: 40px; /* Ensure height consistency */
+            min-height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -288,7 +274,6 @@
             color: white;
         }
         
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -299,9 +284,9 @@
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
             justify-content: center;
-            align-items: flex-start; /* Align to top for better scrolling */
-            padding: 20px 10px; /* Small padding on sides for mobile */
-            overflow-y: auto; /* Allow modal container to scroll */
+            align-items: flex-start;
+            padding: 20px 10px;
+            overflow-y: auto;
         }
 
         .modal-content {
@@ -309,7 +294,7 @@
             width: 100%;
             max-width: 600px;
             background: white;
-            margin-top: 20px; /* Push down slightly */
+            margin-top: 20px;
             margin-bottom: 20px;
             position: relative;
         }
@@ -328,7 +313,6 @@
             padding: 5px;
         }
 
-        /* Records Table Styles */
         .records-container {
             overflow-x: auto;
         }
@@ -404,7 +388,6 @@
             opacity: 0.6;
         }
 
-        /* Pagination Styles */
         .pagination {
             display: flex;
             flex-direction: column;
@@ -435,7 +418,6 @@
             color: #555;
         }
 
-        /* Form Styles */
         .form-row {
             display: flex;
             flex-direction: column;
@@ -455,10 +437,9 @@
         }
 
         .form-buttons .btn {
-            flex: 1 1 45%; /* Buttons take about half width each on mobile */
+            flex: 1 1 45%; 
         }
 
-        /* Additional buttons alignment and sizing */
         #additional-buttons {
             display: none;
             justify-content: center;
@@ -479,19 +460,17 @@
         .mt-3 { margin-top: 1rem; }
         .mt-4 { margin-top: 1.5rem; }
 
-        /* PDF Content Wrapper */
         .pdf-content {
-            padding: 10px; /* Reduced padding for mobile */
+            padding: 10px;
             background-color: white;
             overflow-x: auto;
         }
 
-        /* Notification styles */
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            left: 20px; /* Ensure it fits on mobile */
+            left: 20px; 
             padding: 15px 20px;
             border-radius: 5px;
             color: white;
@@ -516,7 +495,6 @@
         .notification.error { background-color: #f44336; }
         .notification.info { background-color: #2196F3; }
 
-        /* Admin Modal Specific Styles */
         .admin-options {
             display: flex;
             flex-direction: column;
@@ -543,110 +521,74 @@
             font-weight: 600;
         }
         
-        /* --- MOBILE SPECIFIC MEDIA QUERIES --- */
-        
-        /* Small Mobile Devices (Android/iPhone SE) */
         @media (max-width: 575px) {
-            .container {
-                padding: 5px; /* Maximize space */
-            }
-
+            .container { padding: 5px; }
             .header {
                 flex-direction: column;
                 align-items: center;
                 text-align: center;
             }
-
             .header div {
                 width: 100%;
                 justify-content: center;
             }
-            
-            /* Fit Calendar on Mobile */
-            .calendar {
-                gap: 2px; /* Reduce gap */
-            }
-
+            .calendar { gap: 2px; }
             .calendar-day {
-                padding: 5px 2px; /* Minimize padding */
-                font-size: 0.85rem; /* Smaller font */
+                padding: 5px 2px;
+                font-size: 0.85rem;
                 min-height: 35px;
             }
-            
             .calendar-day.header {
-                font-size: 0.75rem; /* Smaller header font (Sun, Mon...) */
+                font-size: 0.75rem;
                 padding: 5px 0;
             }
-
-            /* Adjust Modals for Mobile */
             .modal-content {
-                width: 98%; /* Use almost full width */
+                width: 98%;
                 padding: 15px;
                 margin: 10px auto;
             }
-
             .btn {
                 font-size: 14px;
                 padding: 10px 15px;
             }
-
             #additional-buttons .btn {
-                flex: 1 1 45%; /* 2 buttons per row */
+                flex: 1 1 45%;
                 font-size: 12px;
             }
-
             .form-buttons .btn {
-                flex: 1 1 100%; /* Stack buttons on very small screens */
+                flex: 1 1 100%;
             }
         }
         
-        /* Tablets and larger phones */
         @media (min-width: 576px) {
             .form-row {
                 flex-direction: row;
                 flex-wrap: wrap;
                 margin: 0 -10px;
             }
-
             .form-col {
                 flex: 1 0 200px;
                 padding: 0 10px;
             }
-            
             .form-buttons .btn {
                 flex: 1 1 auto;
                 width: auto;
             }
         }
         
-        /* PC / Desktop */
         @media (min-width: 768px) {
             .header {
                 flex-direction: row;
                 align-items: center;
             }
-            
-            .header h2 {
-                margin-bottom: 0;
-            }
-
+            .header h2 { margin-bottom: 0; }
             .header .btn {
                 width: auto;
                 margin-left: 10px;
             }
-
-            #additional-buttons {
-                flex-direction: row;
-            }
-
-            .calendar {
-                gap: 5px; /* Restore gap for PC */
-            }
-
-            .calendar-day {
-                padding: 15px; /* Restore padding for PC */
-                font-size: 1rem;
-            }
+            #additional-buttons { flexDirection: row; }
+            .calendar { gap: 5px; }
+            .calendar-day { padding: 15px; font-size: 1rem; }
         }
     </style>
 </head>
@@ -875,8 +817,8 @@
             </div>
             <div id="entry-form">
                 <div class="form-group">
-                    <label for="intake-count">How many entries?</label>
-                    <span id="intake-count"></span>
+                    <p style="margin-bottom: 5px; font-weight: 600;">How many entries?</p>
+                    <span id="intake-count" style="font-weight: bold; font-size: 1.2em;"></span>
                 </div>
                 <div id="application-entries">
                 </div>
@@ -1174,11 +1116,11 @@
 
     <script>
         // --- SUPABASE CONFIGURATION ---
-        // GLOBAL DECLARATION - DO NOT REMOVE
+        // GLOBAL DECLARATION
         const supabaseUrl = 'https://wmciiqeywkluzkslzsrq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtY2lpcWV5d2tsdXprc2x6c3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNDk0MjksImV4cCI6MjA3OTgyNTQyOX0.qVXO8GcXW8AsjWT4N-zkfW5B0g5qijoPX2mOZc4btVQ';
         
-        // FIX: Renamed 'supabase' to 'supabaseClient' to avoid conflict with the library itself
+        // Use consistent variable name 'supabaseClient'
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // --- PWA INSTALLATION LOGIC ---
@@ -1186,10 +1128,10 @@
         const installBtnContainer = document.getElementById('install-btn-container');
         const installBtn = document.getElementById('install-btn');
 
-        // Check if service worker is supported and register it
+        // Register Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // Registering the new service-worker.js file for offline caching
+                // Ensure service-worker.js exists in the same folder
                 navigator.serviceWorker.register('./service-worker.js')
                     .then(reg => console.log('Service Worker registered successfully:', reg))
                     .catch(err => console.log('Service Worker registration failed:', err));
@@ -1202,7 +1144,7 @@
             e.preventDefault();
             // Stash the event so it can be triggered later.
             deferredPrompt = e;
-            // Update UI notify the user they can install the PWA
+            // Show the install button
             installBtnContainer.style.display = 'block';
             console.log('beforeinstallprompt fired, install button shown');
         });
@@ -1435,7 +1377,6 @@
         };
         
         const applyUIState = () => {
-            // DEFAULT STATE IS FROZEN if undefined
             const status = localStorage.getItem('appStatus');
             if (status === 'frozen' || !status) {
                 freezeUI();
@@ -1457,10 +1398,8 @@
             loginPage.style.display = 'flex';
             page2.style.display = 'none';
 
-            // FORCE START IN FREEZE MODE FOR NEW USERS
             if (!localStorage.getItem('appStatus')) {
                 localStorage.setItem('appStatus', 'frozen');
-                // Remove expiration if it exists to ensure clean slate
                 localStorage.removeItem('appExpiration'); 
             }
 
@@ -1472,7 +1411,6 @@
                 loginBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     if (usernameInput.value === 'freeaccount' && passwordInput.value === 'store2025') {
-                        // Allow login but keep UI state based on appStatus
                         loginPage.style.display = 'none';
                         page2.style.display = 'block';
                         
@@ -1496,7 +1434,6 @@
             }
         }
         
-        // Helper function to convert string to Title Case
         function toTitleCase(str) {
             if (!str) return '';
             return str.replace(
@@ -1506,7 +1443,6 @@
         }
 
         function setupEventListeners() {
-            // Auto-capitalize inputs in the registration form
             const fullNameInput = document.getElementById('full-name');
             const medicineNameInput = document.getElementById('medicine-name');
 
@@ -1518,7 +1454,6 @@
                 e.target.value = toTitleCase(e.target.value);
             });
 
-            // Trial Extension Modal Elements
             const enterCodeBtn = document.getElementById('enter-code-btn');
             const extensionCodeModal = document.getElementById('extension-code-modal');
             const closeExtensionModalBtn = document.getElementById('close-extension-modal');
@@ -1669,7 +1604,7 @@
                 const isVisible = recordsContainer.style.display === 'block';
                 recordsContainer.style.display = isVisible ? 'none' : 'block';
                 if (!isVisible) {
-                    recordsDateFilter.value = ''; // Clear date filter when opening
+                    recordsDateFilter.value = '';
                     displayRecords();
                 }
             });
@@ -1842,10 +1777,9 @@
                     const durationDays = parseInt(document.getElementById('duration').value, 10);
                     if (isNaN(durationDays) || durationDays <= 0) {
                         showNotification('Please select a valid duration.', 'error');
-                        return; // Stop submission
+                        return;
                     }
 
-                    // Parse date as local timezone
                     const startDate = new Date(document.getElementById('date').value + 'T00:00:00'); 
                     
                     let timesToRegister = [];
@@ -1860,7 +1794,6 @@
                         timesToRegister.push(singleTime);
                     }
 
-                    // Get patient and medicine data once
                     const patientData = {
                         fullName: document.getElementById('full-name').value,
                         age: document.getElementById('age').value,
@@ -1876,7 +1809,6 @@
                     };
                     
                     try {
-                        // Add patient if new
                         const patientExists = patients.some(p => p.fullName === patientData.fullName);
                         if (!patientExists) {
                             await addPatient(patientData);
@@ -1887,7 +1819,7 @@
                         for (let d = 0; d < durationDays; d++) {
                             const loopDate = new Date(startDate);
                             loopDate.setDate(startDate.getDate() + d);
-                            const dateString = formatDateForInput(loopDate); // Use existing helper
+                            const dateString = formatDateForInput(loopDate);
 
                             for (const time of timesToRegister) {
                                 const medication = {
@@ -1964,7 +1896,6 @@
                 displaySummaryData();
             });
 
-            // Event Listeners for new date filters
             takenDate.addEventListener('change', () => {
                 currentPage = 1;
                 displayTakenData();
@@ -1974,13 +1905,11 @@
                 displayFailedData();
             });
 
-            // Event listener for new toggle button
             toggleButtonsBtn.addEventListener('click', () => {
                 const isHidden = window.getComputedStyle(additionalButtons).display === 'none';
                 additionalButtons.style.display = isHidden ? 'flex' : 'none';
                 toggleButtonsBtn.classList.toggle('collapsed');
             });
-            // Set initial state of the toggle button to collapsed
             toggleButtonsBtn.classList.add('collapsed');
 
             downloadPdfBtn.addEventListener('click', () => downloadPdf('summary', 'Summary Report'));
@@ -2071,7 +2000,6 @@
             }
 
             if (localStorage.getItem('appStatus') === 'frozen' && page2.style.display === 'block') { 
-                 // We don't necessarily logout, just freeze UI
                  if (timerInterval) {
                     clearInterval(timerInterval);
                     timerInterval = null; 
@@ -2083,7 +2011,6 @@
         };
 
         async function validateExtensionCode() {
-            // Function to clear clipboard
             const clearClipboard = async () => {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     try {
@@ -2105,10 +2032,8 @@
                 return;
             }
 
-            // SUPABASE VALIDATION
             try {
                 // Check if the code exists in Supabase
-                // FIX: Updated to use 'supabaseClient'
                 const { data, error } = await supabaseClient
                     .from('access_codes')
                     .select('*')
@@ -2126,8 +2051,6 @@
                     return;
                 }
 
-                // Mark as USED (Important to prevent reuse)
-                // FIX: Updated to use 'supabaseClient'
                 const { error: updateError } = await supabaseClient
                     .from('access_codes')
                     .update({ status: 'used' })
@@ -2139,13 +2062,11 @@
                     return;
                 }
 
-                // If we are here, code is valid
                 const newExpiration = new Date();
                 newExpiration.setDate(newExpiration.getDate() + 30);
                 localStorage.setItem('appExpiration', newExpiration.getTime());
                 localStorage.setItem('appStatus', 'running');
 
-                // Trial Level Logic (Optional UI enhancement)
                 let trialLevel = parseInt(localStorage.getItem('trialLevel') || '1');
                 let nextLevel = (trialLevel % 5) + 1;
                 localStorage.setItem('trialLevel', nextLevel);
@@ -2153,7 +2074,6 @@
                 showNotification('Code Verified! Access granted for 30 days.', 'success');
                 hideModal(document.getElementById('extension-code-modal'));
                 
-                // Refresh UI state and countdown
                 unfreezeUI();
                 checkExpirationOnLoad();
 
@@ -2216,7 +2136,7 @@
             showModal(registerModal);
             currentEditingId = null;
             medicationForm.reset();
-            document.getElementById('duration').value = "1"; // Default to 1 day
+            document.getElementById('duration').value = "1";
             intakeTimes = [];
             if (lastPatientData) {
                 document.getElementById('full-name').value = lastPatientData.fullName;
@@ -2255,13 +2175,11 @@
             const filterDate = recordsDateFilter.value;
             let filteredMedications = medications;
 
-            // Apply date filter first
             if (filterDate) {
                 filteredMedications = filteredMedications.filter(med => med.date === filterDate);
             }
             
             if (searchTerm) {
-                // Apply search filter to the already date-filtered list
                 filteredMedications = filteredMedications.filter(med => 
                     med.fullName.toLowerCase().includes(searchTerm) ||
                     med.medicineName.toLowerCase().includes(searchTerm) ||
@@ -2270,11 +2188,10 @@
                 );
             }
 
-            // Sort by date and time, newest to oldest
             filteredMedications.sort((a, b) => {
                 const dateTimeA = new Date(`${a.date}T${a.time}`);
                 const dateTimeB = new Date(`${b.date}T${b.time}`);
-                return dateTimeB - dateTimeA; // Descending order
+                return dateTimeB - dateTimeA;
             });
             
             const startIndex = (currentPage - 1) * recordsPerPage;
@@ -2498,7 +2415,7 @@
             paginationLabel.classList.add('pagination-label');
             paginationLabel.textContent = `Page ${currentPage} of ${pageCount}`;
             paginationEl.appendChild(paginationLabel);
-            paginationEl.appendChild(controlsContainer); // Append controls after label
+            paginationEl.appendChild(controlsContainer); 
         }
 
         async function editMedication(id) {
