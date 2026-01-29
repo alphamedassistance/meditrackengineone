@@ -2,6 +2,8 @@
   "name": "MediTrack Medicine Tracker",
   "short_name": "MediTrack",
   "start_url": "./index.html",
+  "id": "/",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f5f7fa",
   "theme_color": "#6a11cb",
