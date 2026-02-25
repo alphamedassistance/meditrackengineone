@@ -2009,8 +2009,7 @@
             applyUIState();
             updateCountdownDisplay();
         };
-
-        async function validateExtensionCode() {
+           async function validateExtensionCode() {
             const clearClipboard = async () => {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     try {
@@ -2025,43 +2024,37 @@
 
             const extensionCodeInput = document.getElementById('extension-code');
             const extensionCodeError = document.getElementById('extension-code-error');
-            const code = extensionCodeInput.value.trim();
+            // Ensure the input is uppercase to match the database logic safely
+            const userInput = extensionCodeInput.value.trim().toUpperCase();
 
-            if (!code) {
+            if (!userInput) {
                 extensionCodeError.textContent = 'Please enter a code.';
                 return;
             }
 
             try {
-                // Check if the code exists in Supabase
+                // Let the user know it is processing
+                extensionCodeError.style.color = 'blue';
+                extensionCodeError.textContent = 'Verifying...';
+                
+                // Call the secure database function
                 const { data, error } = await supabaseClient
-                    .from('access_codes')
-                    .select('*')
-                    .eq('code', code)
-                    .single();
+                    .rpc('verify_and_burn_code', { input_code: userInput });
 
-                if (error || !data) {
-                    console.error("Supabase Error or No Data:", error);
-                    extensionCodeError.textContent = 'Invalid code. Access denied.';
+                // Debugging lines (Check the console if it fails)
+                console.log("Supabase Data:", data);
+                console.log("Supabase Error:", error);
+
+                if (error || !data || data.length === 0) {
+                    extensionCodeError.style.color = 'red';
+                    extensionCodeError.textContent = 'Invalid or expired Access Code.';
                     return;
                 }
 
-                if (data.status === 'used') {
-                    extensionCodeError.textContent = 'This code has already been used.';
-                    return;
-                }
+                // Success! Code was valid and is now burned.
+                console.log("Access Granted. DB ID:", data[0].id);
 
-                const { error: updateError } = await supabaseClient
-                    .from('access_codes')
-                    .update({ status: 'used' })
-                    .eq('id', data.id);
-
-                if (updateError) {
-                    console.error("Error updating status:", updateError);
-                    extensionCodeError.textContent = 'Error processing code. Please try again.';
-                    return;
-                }
-
+                // Apply the 30-day extension logic specific to MediTrack
                 const newExpiration = new Date();
                 newExpiration.setDate(newExpiration.getDate() + 30);
                 localStorage.setItem('appExpiration', newExpiration.getTime());
@@ -2079,10 +2072,11 @@
 
             } catch (err) {
                 console.error("Unexpected error:", err);
+                extensionCodeError.style.color = 'red';
                 extensionCodeError.textContent = 'Connection error. Please check your internet.';
             }
         }
-
+        
         function generateCalendar(month, year) {
             calendarEl.innerHTML = '';
             
