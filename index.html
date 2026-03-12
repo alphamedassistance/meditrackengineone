@@ -1426,9 +1426,9 @@
             loginPage.style.display = 'flex';
             page2.style.display = 'none';
 
-            if (!localStorage.getItem('appStatus')) {
-                localStorage.setItem('appStatus', 'frozen');
-                localStorage.removeItem('appExpiration'); 
+           if (!localStorage.getItem('meditrack_appStatus')) {
+                localStorage.setItem('meditrack_appStatus', 'frozen');
+                localStorage.removeItem('meditrack_appExpiration'); 
             }
 
             try {
