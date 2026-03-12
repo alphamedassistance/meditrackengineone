@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meditrack-v1-offline';
+const CACHE_NAME = 'meditrack-v2-offline'; // <--- Bumped to v2 so phones download the new update!
 
 // 1. INSTALL EVENT: Cache ONLY local core files
 // We removed the external CDN links here to prevent installation failure.
@@ -38,38 +38,30 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
-// 3. FETCH EVENT: Stale-While-Revalidate Strategy
+// 3. FETCH EVENT: True Stale-While-Revalidate Strategy
 self.addEventListener('fetch', (event) => {
-  // Handle Supabase and other external requests
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      // Return cached response if found
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+    // Only cache GET requests (ignore Supabase POST/PUT requests)
+    if (event.request.method !== 'GET') return;
 
-      // Otherwise fetch from network
-      return fetch(event.request).then((networkResponse) => {
-        // Check if we received a valid response
-        // We ALLOW 'cors' type now so external CDNs can be cached
-        if (!networkResponse || networkResponse.status !== 200) {
-            return networkResponse;
-        }
+    event.respondWith(
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.match(event.request).then((cachedResponse) => {
+                
+                // Fetch the fresh version from the network in the background
+                const fetchPromise = fetch(event.request).then((networkResponse) => {
+                    // If network response is valid, update the cache
+                    if (networkResponse && networkResponse.status === 200) {
+                        cache.put(event.request, networkResponse.clone());
+                    }
+                    return networkResponse;
+                }).catch(() => {
+                    // Ignore network errors (user might be offline)
+                });
 
-        // Clone response to cache it
-        const responseToCache = networkResponse.clone();
-        
-        // Only cache GET requests (don't cache API POST/PUT calls)
-        if (event.request.method === 'GET') {
-            caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, responseToCache);
+                // Return the cached response IMMEDIATELY if we have it, 
+                // otherwise wait for the network fetch to finish.
+                return cachedResponse || fetchPromise;
             });
-        }
-
-        return networkResponse;
-      }).catch(() => {
-         // Optional: Return a fallback page if offline and resource not cached
-      });
-    })
-  );
+        })
+    );
 });
