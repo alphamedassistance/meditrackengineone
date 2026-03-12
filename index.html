@@ -40,7 +40,7 @@
 
         /* Install Button Styles */
         #install-btn-container {
-            display: none; /* Hidden by default, triggers via JS */
+            display: none;
             margin-top: 25px;
             text-align: center;
             width: 100%;
@@ -80,14 +80,86 @@
             gap: 10px;
         }
 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .header h2 {
             font-size: 1.2em;
             margin: 0;
         }
-        
-        .header div {
+
+        /* Make Admin Button Invisible */
+        #admin-btn {
+            opacity: 0;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100vh;
+            background-color: #fff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            z-index: 3000;
+            transition: left 0.3s ease;
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .sidebar-content {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-content .btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px 15px;
+        }
+
+        .hamburger-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+            padding: 5px;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2999;
+            display: none;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
         }
 
         /* Login Page Styles */
@@ -194,10 +266,6 @@
             display: none;
         }
 
-        #admin-btn {
-            opacity: 0; 
-        }
-
         .calendar-container, .records-container, .modal-content {
             background: white;
             border-radius: 10px;
@@ -212,22 +280,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
             margin-bottom: 15px;
-        }
-
-        .btn-toggle {
-            background: none;
-            border: none;
-            font-size: 1.5em;
-            cursor: pointer;
-            color: #2196F3;
-            padding: 0;
-            line-height: 1;
-            transition: transform 0.3s ease;
-        }
-        .btn-toggle.collapsed {
-            transform: rotate(-90deg);
         }
 
         .calendar {
@@ -282,7 +335,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            z-index: 4000;
             justify-content: center;
             align-items: flex-start;
             padding: 20px 10px;
@@ -440,22 +493,6 @@
             flex: 1 1 45%; 
         }
 
-        #additional-buttons {
-            display: none;
-            justify-content: center;
-            align-items: stretch;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        #additional-buttons .btn {
-            flex: 1 1 120px;
-            text-align: center;
-            padding: 10px;
-            font-size: 0.9em;
-        }
-
         .mt-2 { margin-top: 0.5rem; }
         .mt-3 { margin-top: 1rem; }
         .mt-4 { margin-top: 1.5rem; }
@@ -475,7 +512,7 @@
             border-radius: 5px;
             color: white;
             font-weight: 600;
-            z-index: 2000;
+            z-index: 5000;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             opacity: 0;
             transform: translateY(-20px);
@@ -523,15 +560,6 @@
         
         @media (max-width: 575px) {
             .container { padding: 5px; }
-            .header {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-            .header div {
-                width: 100%;
-                justify-content: center;
-            }
             .calendar { gap: 2px; }
             .calendar-day {
                 padding: 5px 2px;
@@ -550,10 +578,6 @@
             .btn {
                 font-size: 14px;
                 padding: 10px 15px;
-            }
-            #additional-buttons .btn {
-                flex: 1 1 45%;
-                font-size: 12px;
             }
             .form-buttons .btn {
                 flex: 1 1 100%;
@@ -577,16 +601,6 @@
         }
         
         @media (min-width: 768px) {
-            .header {
-                flex-direction: row;
-                align-items: center;
-            }
-            .header h2 { margin-bottom: 0; }
-            .header .btn {
-                width: auto;
-                margin-left: 10px;
-            }
-            #additional-buttons { flexDirection: row; }
             .calendar { gap: 5px; }
             .calendar-day { padding: 15px; font-size: 1rem; }
         }
@@ -629,16 +643,15 @@
     </div>
 
     <div class="page-2" id="page-2">
-        <div class="header">
-            <h2>MediTrack ver. 1.0</h2>
-            <div>
-                <button class="btn btn-danger" id="logout-btn">Logout</button>
-                <button class="btn btn-info" id="admin-btn">Admin</button>
-            </div>
-        </div>
+        
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-        <div class="container">
-            <div id="additional-buttons">
+        <div id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3>Dashboard</h3>
+                <span class="close" id="close-sidebar-btn">&times;</span>
+            </div>
+            <div class="sidebar-content">
                 <button class="btn btn-info" id="view-records-btn">View Records</button>
                 <button class="btn btn-warning" id="list-patients-btn">List of Patients</button>
                 <button class="btn btn-success" id="summary-report-btn">Summary Report</button>
@@ -646,12 +659,26 @@
                 <button class="btn btn-danger" id="failed-intake-btn">Failed to Intake</button>
                 <button class="btn btn-info" id="export-json-btn">Export JSON</button>
                 <button class="btn btn-info" id="import-json-btn">Import JSON</button>
+                <hr style="border: 1px solid #ddd; margin: 5px 0;">
+                <button class="btn btn-danger" id="logout-btn">Logout</button>
             </div>
+        </div>
+
+        <div class="header">
+            <div class="header-left">
+                <button id="sidebar-toggle-btn" class="hamburger-btn">☰</button>
+                <h2>MediTrack ver. 1.0</h2>
+            </div>
+            <div>
+                <button class="btn btn-info" id="admin-btn">Admin</button>
+            </div>
+        </div>
+
+        <div class="container">
 
             <div class="calendar-container">
                 <div class="calendar-header">
                     <h3 id="current-month">Calendar</h3>
-                    <button id="toggle-buttons-btn" class="btn-toggle">◆</button>
                 </div>
                 <div class="calendar" id="calendar">
                 </div>
@@ -1115,12 +1142,26 @@
     </div>
 
     <script>
+        // --- XSS PROTECTION HELPER ---
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>'"]/g, function(tag) {
+                const charsToReplace = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                };
+                return charsToReplace[tag] || tag;
+            });
+        }
+        // -----------------------------
+
         // --- SUPABASE CONFIGURATION ---
-        // GLOBAL DECLARATION
         const supabaseUrl = 'https://wmciiqeywkluzkslzsrq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtY2lpcWV5d2tsdXprc2x6c3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNDk0MjksImV4cCI6MjA3OTgyNTQyOX0.qVXO8GcXW8AsjWT4N-zkfW5B0g5qijoPX2mOZc4btVQ';
         
-        // Use consistent variable name 'supabaseClient'
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // --- PWA INSTALLATION LOGIC ---
@@ -1128,45 +1169,31 @@
         const installBtnContainer = document.getElementById('install-btn-container');
         const installBtn = document.getElementById('install-btn');
 
-        // Register Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // Ensure service-worker.js exists in the same folder
                 navigator.serviceWorker.register('./service-worker.js')
                     .then(reg => console.log('Service Worker registered successfully:', reg))
                     .catch(err => console.log('Service Worker registration failed:', err));
             });
         }
 
-        // Handle the install prompt
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
-            // Stash the event so it can be triggered later.
             deferredPrompt = e;
-            // Show the install button
             installBtnContainer.style.display = 'block';
-            console.log('beforeinstallprompt fired, install button shown');
         });
 
         installBtn.addEventListener('click', async () => {
-            // Hide the app provided install promotion
             installBtnContainer.style.display = 'none';
-            // Show the install prompt
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                // Wait for the user to respond to the prompt
                 const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to the install prompt: ${outcome}`);
-                // We've used the prompt, and can't use it again, throw it away
                 deferredPrompt = null;
             }
         });
 
-        // Hide button if app is already installed
         window.addEventListener('appinstalled', () => {
             installBtnContainer.style.display = 'none';
-            console.log('PWA was successfully installed');
         });
         // --- END PWA LOGIC ---
 
@@ -1175,11 +1202,9 @@
         const DB_NAME = 'MedicineSupportDB';
         const DB_VERSION = 1;
         
-        // Object store names
         const STORE_MEDICATIONS = 'medications';
         const STORE_PATIENTS = 'patients';
         
-        // Notification function
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -1190,7 +1215,6 @@
             }, 3000);
         }
         
-        // Initialize IndexedDB
         function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -1342,11 +1366,15 @@
         const cancelEntriesBtn = document.getElementById('cancel-entries-btn');
         const frequency1Select = document.getElementById('frequency-1');
         const timeInput = document.getElementById('time');
-        const toggleButtonsBtn = document.getElementById('toggle-buttons-btn');
-        const additionalButtons = document.getElementById('additional-buttons');
         const takenDate = document.getElementById('taken-date');
         const failedDate = document.getElementById('failed-date');
         const recordsDateFilter = document.getElementById('records-date-filter');
+        
+        // Sidebar Elements
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
 
         // Current date
         const today = new Date();
@@ -1443,6 +1471,26 @@
         }
 
         function setupEventListeners() {
+            // Sidebar Controls
+            function openSidebar() {
+                sidebar.classList.add('open');
+                sidebarOverlay.classList.add('show');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('show');
+            }
+
+            sidebarToggleBtn.addEventListener('click', openSidebar);
+            closeSidebarBtn.addEventListener('click', closeSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
+
+            // Close sidebar when clicking menu items
+            document.querySelectorAll('.sidebar-content .btn').forEach(btn => {
+                btn.addEventListener('click', closeSidebar);
+            });
+
             const fullNameInput = document.getElementById('full-name');
             const medicineNameInput = document.getElementById('medicine-name');
 
@@ -1905,13 +1953,6 @@
                 displayFailedData();
             });
 
-            toggleButtonsBtn.addEventListener('click', () => {
-                const isHidden = window.getComputedStyle(additionalButtons).display === 'none';
-                additionalButtons.style.display = isHidden ? 'flex' : 'none';
-                toggleButtonsBtn.classList.toggle('collapsed');
-            });
-            toggleButtonsBtn.classList.add('collapsed');
-
             downloadPdfBtn.addEventListener('click', () => downloadPdf('summary', 'Summary Report'));
             copyPdfBtn.addEventListener('click', () => copyText('summary'));
             downloadPatientsPdfBtn.addEventListener('click', () => downloadPdf('patients', 'List of Patients'));
@@ -2009,7 +2050,8 @@
             applyUIState();
             updateCountdownDisplay();
         };
-           async function validateExtensionCode() {
+
+        async function validateExtensionCode() {
             const clearClipboard = async () => {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     try {
@@ -2024,7 +2066,6 @@
 
             const extensionCodeInput = document.getElementById('extension-code');
             const extensionCodeError = document.getElementById('extension-code-error');
-            // Ensure the input is uppercase to match the database logic safely
             const userInput = extensionCodeInput.value.trim().toUpperCase();
 
             if (!userInput) {
@@ -2033,15 +2074,12 @@
             }
 
             try {
-                // Let the user know it is processing
                 extensionCodeError.style.color = 'blue';
                 extensionCodeError.textContent = 'Verifying...';
                 
-                // Call the secure database function
                 const { data, error } = await supabaseClient
                     .rpc('verify_and_burn_code', { input_code: userInput });
 
-                // Debugging lines (Check the console if it fails)
                 console.log("Supabase Data:", data);
                 console.log("Supabase Error:", error);
 
@@ -2051,10 +2089,8 @@
                     return;
                 }
 
-                // Success! Code was valid and is now burned.
                 console.log("Access Granted. DB ID:", data[0].id);
 
-                // Apply the 30-day extension logic specific to MediTrack
                 const newExpiration = new Date();
                 newExpiration.setDate(newExpiration.getDate() + 30);
                 localStorage.setItem('appExpiration', newExpiration.getTime());
@@ -2158,6 +2194,7 @@
             return `${displayHour}:${minutes}${period}`;
         }
 
+        // --- XSS PROTECTED RENDER FUNCTIONS ---
         function displayRecords() {
             if (recordsContainer.style.display !== 'block') {
                 return;
@@ -2201,14 +2238,15 @@
                     
                     setStatusClass(row, med);
                     
+                    // XSS PROTECTION APPLIED HERE
                     row.innerHTML = `
-                        <td>${med.fullName}</td>
-                        <td>${med.medicineName}</td>
+                        <td>${escapeHTML(med.fullName)}</td>
+                        <td>${escapeHTML(med.medicineName)}</td>
                         <td>${formatDisplayDate(med.date)}</td>
                         <td>${formatTimeForDisplay(med.time)}</td>
-                        <td>${med.frequency1}</td>
-                        <td>${med.frequency2}</td>
-                        <td>${med.medicineType}</td>
+                        <td>${escapeHTML(med.frequency1)}</td>
+                        <td>${escapeHTML(med.frequency2)}</td>
+                        <td>${escapeHTML(med.medicineType)}</td>
                         <td class="action-buttons">
                             <button class="action-btn btn-info edit-btn" data-id="${med.id}">Edit</button>
                             <button class="action-btn btn-danger delete-btn" data-id="${med.id}">Delete</button>
@@ -2216,7 +2254,7 @@
                             <button class="action-btn btn-danger failed-btn" data-id="${med.id}">Failed</button>
                             <button class="action-btn btn-warning undo-btn" data-id="${med.id}">Undo</button>
                         </td>
-                        <td>${med.status}</td>
+                        <td>${escapeHTML(med.status)}</td>
                     `;
                     
                     recordsBody.appendChild(row);
@@ -2465,10 +2503,11 @@
             } else {
                 paginatedItems.forEach(patient => {
                     const row = document.createElement('tr');
+                    // XSS PROTECTION APPLIED HERE
                     row.innerHTML = `
-                        <td>${patient.fullName}</td>
-                        <td>${patient.age}</td>
-                        <td>${patient.gender}</td>
+                        <td>${escapeHTML(patient.fullName)}</td>
+                        <td>${escapeHTML(patient.age)}</td>
+                        <td>${escapeHTML(patient.gender)}</td>
                         <td>${formatDisplayDate(patient.dob)}</td>
                     `;
                     patientsBody.appendChild(row);
@@ -2513,14 +2552,15 @@
             } else {
                 paginatedItems.forEach(med => {
                     const row = document.createElement('tr');
+                    // XSS PROTECTION APPLIED HERE
                     row.innerHTML = `
-                        <td>${med.fullName}</td>
-                        <td>${med.medicineName}</td>
+                        <td>${escapeHTML(med.fullName)}</td>
+                        <td>${escapeHTML(med.medicineName)}</td>
                         <td>${formatTimeForDisplay(med.time)}</td>
-                        <td>${med.frequency1}</td>
-                        <td>${med.frequency2}</td>
-                        <td>${med.medicineType}</td>
-                        <td>${med.status}</td>
+                        <td>${escapeHTML(med.frequency1)}</td>
+                        <td>${escapeHTML(med.frequency2)}</td>
+                        <td>${escapeHTML(med.medicineType)}</td>
+                        <td>${escapeHTML(med.status)}</td>
                     `;
                     summaryBody.appendChild(row);
                 });
@@ -2562,11 +2602,12 @@
             } else {
                 paginatedItems.forEach(med => {
                     const row = document.createElement('tr');
+                    // XSS PROTECTION APPLIED HERE
                     row.innerHTML = `
-                        <td>${med.fullName}</td>
-                        <td>${med.medicineName}</td>
+                        <td>${escapeHTML(med.fullName)}</td>
+                        <td>${escapeHTML(med.medicineName)}</td>
                         <td>${formatTimeForDisplay(med.time)}</td>
-                        <td>${med.status}</td>
+                        <td>${escapeHTML(med.status)}</td>
                     `;
                     takenBody.appendChild(row);
                 });
@@ -2608,11 +2649,12 @@
             } else {
                 paginatedItems.forEach(med => {
                     const row = document.createElement('tr');
+                    // XSS PROTECTION APPLIED HERE
                     row.innerHTML = `
-                        <td>${med.fullName}</td>
-                        <td>${med.medicineName}</td>
+                        <td>${escapeHTML(med.fullName)}</td>
+                        <td>${escapeHTML(med.medicineName)}</td>
                         <td>${formatTimeForDisplay(med.time)}</td>
-                        <td>${med.status}</td>
+                        <td>${escapeHTML(med.status)}</td>
                     `;
                     failedBody.appendChild(row);
                 });
